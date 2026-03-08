@@ -1,0 +1,111 @@
+name: Build & Submit to App Store
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Write ASC API Key
+        run: |
+          mkdir -p ~/.private_keys
+          printf '%s' "$ASC_PRIVATE_KEY" > ~/.private_keys/AuthKey_${ASC_KEY_ID}.p8
+          chmod 600 ~/.private_keys/AuthKey_${ASC_KEY_ID}.p8
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup code signing
+        run: node setup-signing.js
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          ASC_KEY_PATH: /Users/runner/.private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+          TEAM_ID: 4LZJ7U5FHS
+          BUNDLE_ID: com.gyeningcorp.stickerquest
+
+      - name: Set build number
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" Sources/StickerQuest/Info.plist
+          echo "Build number: $GITHUB_RUN_NUMBER"
+
+      - name: Generate app icons
+        run: |
+          SRC="Sources/StickerQuest/Assets.xcassets/AppIcon.appiconset/icon-1024.png"
+          DIR="Sources/StickerQuest/Assets.xcassets/AppIcon.appiconset"
+          for SIZE in 40 58 60 80 87 120 180 1024; do
+            sips -z $SIZE $SIZE "$SRC" --out "$DIR/icon-${SIZE}.png" > /dev/null 2>&1
+          done
+          for PNG in "$DIR"/icon-*.png; do
+            TMP="${PNG%.png}_tmp.jpg"
+            sips -s format jpeg "$PNG" --out "$TMP" > /dev/null 2>&1
+            sips -s format png "$TMP" --out "$PNG" > /dev/null 2>&1
+            rm "$TMP"
+          done
+
+      - name: Archive app
+        run: |
+          xcodebuild archive \
+            -scheme StickerQuest \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath $RUNNER_TEMP/StickerQuest.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            PROVISIONING_PROFILE="$DIST_PROFILE_UUID" \
+            DEVELOPMENT_TEAM=4LZJ7U5FHS \
+            CURRENT_PROJECT_VERSION=$GITHUB_RUN_NUMBER \
+            | xcpretty || true
+          ls $RUNNER_TEMP/StickerQuest.xcarchive
+
+      - name: Export IPA
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store</string>
+            <key>teamID</key><string>4LZJ7U5FHS</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict><key>com.gyeningcorp.stickerquest</key><string>$DIST_PROFILE_UUID</string></dict>
+          </dict></plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/StickerQuest.xcarchive \
+            -exportPath $RUNNER_TEMP/export \
+            -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
+
+      - name: Upload to TestFlight
+        run: |
+          xcrun altool --upload-app \
+            --file "$RUNNER_TEMP/export/StickerQuest.ipa" \
+            --type ios \
+            --apiKey ${{ secrets.ASC_KEY_ID }} \
+            --apiIssuer ${{ secrets.ASC_ISSUER_ID }} \
+            --private-key @path:/Users/runner/.private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+
+      - name: Notify completion
+        if: success()
+        run: echo "✅ StickerQuest build $GITHUB_RUN_NUMBER uploaded to TestFlight!"
