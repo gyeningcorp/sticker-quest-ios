@@ -15,6 +15,7 @@ const ASC_KEY_ID    = process.env.ASC_KEY_ID;
 const ASC_ISSUER_ID = process.env.ASC_ISSUER_ID;
 const ASC_KEY_PATH  = process.env.ASC_KEY_PATH;
 const BUNDLE_ID_STR = process.env.BUNDLE_ID || 'com.gyeningcorp.stickerquest';
+// Key: 6R6XCV229K (updated 2026-03-07)
 const TEAM_ID       = process.env.TEAM_ID   || '4LZJ7U5FHS';
 
 function makeJWT() {
