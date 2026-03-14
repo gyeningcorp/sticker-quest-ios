@@ -109,8 +109,14 @@ jobs:
 
       - name: Upload to TestFlight
         run: |
+          echo "=== Export directory contents ==="
+          ls -la "$RUNNER_TEMP/export/" || echo "export dir not found"
+          ls -la "$RUNNER_TEMP/export/**/" 2>/dev/null || true
+          find "$RUNNER_TEMP/export" -name "*.ipa" 2>/dev/null
+          IPA=$(find "$RUNNER_TEMP/export" -name "*.ipa" | head -1)
+          echo "Using IPA: $IPA"
           xcrun altool --upload-app \
-            --file "$RUNNER_TEMP/export/StickerQuest.ipa" \
+            --file "$IPA" \
             --type ios \
             --apiKey ${{ secrets.ASC_KEY_ID }} \
             --apiIssuer ${{ secrets.ASC_ISSUER_ID }} \
