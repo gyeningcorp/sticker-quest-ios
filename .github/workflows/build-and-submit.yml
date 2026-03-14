@@ -97,6 +97,16 @@ jobs:
             -exportPath $RUNNER_TEMP/export \
             -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
 
+      - name: Debug archive Info.plist
+        run: |
+          PLIST="$RUNNER_TEMP/StickerQuest.xcarchive/Products/Applications/StickerQuest.app/Info.plist"
+          echo "=== Key plist entries ==="
+          /usr/libexec/PlistBuddy -c "Print :UISupportedInterfaceOrientations" "$PLIST" || echo "UISupportedInterfaceOrientations: NOT FOUND"
+          /usr/libexec/PlistBuddy -c "Print :UILaunchStoryboardName" "$PLIST" || echo "UILaunchStoryboardName: NOT FOUND"
+          /usr/libexec/PlistBuddy -c "Print :UILaunchScreen" "$PLIST" || echo "UILaunchScreen: NOT FOUND"
+          echo "=== Full plist ==="
+          cat "$PLIST"
+
       - name: Upload to TestFlight
         run: |
           xcrun altool --upload-app \

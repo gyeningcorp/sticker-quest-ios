@@ -13,6 +13,42 @@ targets:
       - path: Sources/StickerQuest
     info:
       path: Sources/StickerQuest/Info.plist
+      properties:
+        CFBundleName: Sticker Quest
+        CFBundleDisplayName: Sticker Quest
+        CFBundleIdentifier: com.gyeningcorp.stickerquest
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        CFBundlePackageType: APPL
+        CFBundleInfoDictionaryVersion: "6.0"
+        LSRequiresIPhoneOS: true
+        UIRequiredDeviceCapabilities:
+          - arm64
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        "UISupportedInterfaceOrientations~ipad":
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UILaunchScreen:
+          UIColorName: ""
+          UIImageName: ""
+        ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+          NSExceptionDomains:
+            gyeningcorp.github.io:
+              NSExceptionAllowsInsecureHTTPLoads: false
+              NSIncludesSubdomains: true
+            fonts.googleapis.com:
+              NSExceptionAllowsInsecureHTTPLoads: false
+              NSIncludesSubdomains: true
+            fonts.gstatic.com:
+              NSExceptionAllowsInsecureHTTPLoads: false
+              NSIncludesSubdomains: true
     entitlements:
       path: Sources/StickerQuest/StickerQuest.entitlements
     settings:
@@ -26,6 +62,4 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 4LZJ7U5FHS
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
-        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
         GENERATE_INFOPLIST_FILE: "NO"
