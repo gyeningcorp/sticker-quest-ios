@@ -54,7 +54,7 @@ jobs:
         run: |
           SRC="Sources/StickerQuest/Assets.xcassets/AppIcon.appiconset/icon-1024.png"
           DIR="Sources/StickerQuest/Assets.xcassets/AppIcon.appiconset"
-          for SIZE in 40 58 60 80 87 120 180 1024; do
+          for SIZE in 20 29 40 58 60 76 80 87 120 152 167 180 1024; do
             sips -z $SIZE $SIZE "$SRC" --out "$DIR/icon-${SIZE}.png" > /dev/null 2>&1
           done
           for PNG in "$DIR"/icon-*.png; do
