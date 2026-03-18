@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#FF6B9D">
+<title>Sticker Quest</title>
+<style>
+  :root {
+    --pink: #FF6B9D;
+    --purple: #845EC2;
+    --teal: #00C9A7;
+    --yellow: #FFD93D;
+    --orange: #FF9671;
+    --blue: #4D96FF;
+    --green: #6BCB77;
+    --bg: #FFF5FB;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --muted: #9B9B9B;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --radius: 20px;
+    --tab-h: 70px;
+    --header-h: 70px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+  button, [onclick] { cursor: pointer; -webkit-touch-callout: none; user-select: none; }
+
+  /* SCREENS */
+  .screen { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; background: var(--bg); }
+  .screen.active { display: flex; }
+
+  /* SETUP SCREEN */
+  #screen-setup { background: linear-gradient(160deg, #FF6B9D 0%, #845EC2 100%); align-items: center; justify-content: center; padding: 30px 24px; }
+  .setup-card { background: white; border-radius: 30px; padding: 36px 28px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .setup-logo { font-size: 64px; margin-bottom: 12px; animation: bounce 1.5s infinite; }
+  .setup-title { font-size: 28px; font-weight: 900; color: var(--purple); margin-bottom: 6px; }
+  .setup-sub { font-size: 16px; color: var(--muted); margin-bottom: 28px; }
+  .setup-step { display: none; }
+  .setup-step.active { display: block; }
+  .step-label { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .input-field { width: 100%; padding: 16px 20px; font-size: 18px; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; font-weight: 700; border: 3px solid #EEE; border-radius: 16px; outline: none; color: var(--text); background: #FAFAFA; transition: border-color 0.2s; }
+  .input-field:focus { border-color: var(--pink); background: white; }
+  .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 12px 0; }
+  .avatar-btn { font-size: 32px; padding: 10px; border: 3px solid transparent; border-radius: 14px; background: #F5F5F5; cursor: pointer; transition: all 0.15s; }
+  .avatar-btn:active { transform: scale(0.9); }
+  .avatar-btn.selected { border-color: var(--pink); background: #FFF0F6; transform: scale(1.15); }
+  .btn-primary { width: 100%; padding: 18px; font-size: 20px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; color: white; background: linear-gradient(135deg, var(--pink), var(--purple)); border: none; border-radius: 16px; cursor: pointer; margin-top: 16px; transition: transform 0.1s, box-shadow 0.1s; box-shadow: 0 6px 20px rgba(255,107,157,0.4); }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(255,107,157,0.3); }
+  .btn-secondary { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; color: var(--purple); background: transparent; border: 3px solid var(--purple); border-radius: 16px; cursor: pointer; margin-top: 10px; }
+  .progress-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #EEE; transition: background 0.3s, transform 0.3s; }
+  .dot.active { background: var(--pink); transform: scale(1.3); }
+  .dot.done { background: var(--teal); }
+
+  /* MAIN APP (after setup) */
+  #screen-app { background: var(--bg); }
+  
+  /* HEADER */
+  .app-header { position: sticky; top: 0; z-index: 100; background: white; padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: 0 0 20px 20px; }
+  .child-info { display: flex; align-items: center; gap: 12px; }
+  .child-avatar-big { font-size: 40px; line-height: 1; }
+  .child-name { font-size: 18px; font-weight: 900; color: var(--text); line-height: 1.1; }
+  .child-level { font-size: 13px; font-weight: 700; color: var(--pink); }
+  .points-badge { background: linear-gradient(135deg, var(--yellow), var(--orange)); border-radius: 20px; padding: 8px 14px; text-align: center; box-shadow: 0 3px 10px rgba(255,150,113,0.3); }
+  .points-num { font-size: 22px; font-weight: 900; color: white; line-height: 1; }
+  .points-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  /* XP BAR */
+  .xp-bar-wrap { padding: 8px 20px 0; }
+  .xp-bar-bg { height: 10px; background: #EEE; border-radius: 10px; overflow: hidden; }
+  .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue)); border-radius: 10px; transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .xp-bar-label { font-size: 11px; font-weight: 700; color: var(--muted); text-align: right; margin-top: 4px; }
+
+  /* BOTTOM TAB BAR */
+  .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: white; display: flex; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; border: none; background: none; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; padding: 8px 4px; transition: transform 0.1s; }
+  .tab-btn:active { transform: scale(0.92); }
+  .tab-icon { font-size: 26px; transition: transform 0.2s; }
+  .tab-label { font-size: 11px; font-weight: 700; color: var(--muted); transition: color 0.2s; }
+  .tab-btn.active .tab-icon { transform: scale(1.2); }
+  .tab-btn.active .tab-label { color: var(--pink); }
+  .tab-badge { position: absolute; top: 8px; right: calc(50% - 24px); background: var(--pink); color: white; font-size: 10px; font-weight: 800; border-radius: 10px; padding: 1px 5px; min-width: 16px; text-align: center; }
+
+  /* TAB PANELS */
+  .tab-content { flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--tab-h) + 16px); }
+
+  /* TODAY TAB */
+  .section-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .streak-banner { background: linear-gradient(135deg, var(--orange), var(--yellow)); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+  .streak-fire { font-size: 40px; animation: wiggle 1s infinite; }
+  .streak-text { font-size: 16px; font-weight: 800; color: white; }
+  .streak-count { font-size: 28px; font-weight: 900; color: white; line-height: 1; }
+  
+  .task-card { background: white; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); transition: transform 0.1s, opacity 0.3s; position: relative; overflow: hidden; }
+  .task-card.done { opacity: 0.6; }
+  .task-card.done::after { content: ''; position: absolute; inset: 0; background: rgba(107, 203, 119, 0.08); }
+  .task-card:active { transform: scale(0.98); }
+  .task-icon { font-size: 36px; flex-shrink: 0; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-title { font-size: 17px; font-weight: 800; color: var(--text); }
+  .task-points { font-size: 13px; font-weight: 700; color: var(--orange); margin-top: 2px; }
+  .task-waiting { font-size: 12px; font-weight: 700; color: var(--purple); margin-top: 2px; }
+  .did-it-btn { background: linear-gradient(135deg, var(--green), var(--teal)); border: none; border-radius: 14px; padding: 12px 16px; font-size: 14px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; color: white; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(107,203,119,0.4); transition: transform 0.1s; flex-shrink: 0; }
+  .did-it-btn:active { transform: scale(0.92); }
+  .done-check { width: 44px; height: 44px; background: var(--green); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .waiting-chip { background: #F3EEFF; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--purple); flex-shrink: 0; }
+
+  .empty-state { text-align: center; padding: 50px 30px; }
+  .empty-emoji { font-size: 60px; margin-bottom: 16px; }
+  .empty-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 15px; color: var(--muted); }
+
+  /* STICKERS TAB */
+  .sticker-pack-label { font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+  .sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
+  .sticker-slot { aspect-ratio: 1; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: var(--shadow); transition: transform 0.15s; }
+  .sticker-slot:active { transform: scale(1.2); }
+  .sticker-slot.locked { background: #F0F0F0; filter: grayscale(1); opacity: 0.4; }
+  .sticker-slot.new { animation: pop 0.4s ease; }
+  .sticker-count-banner { background: white; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
+  .sticker-count-icon { font-size: 40px; }
+  .sticker-count-text { font-size: 22px; font-weight: 900; color: var(--purple); }
+  .sticker-count-sub { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+  /* REWARDS TAB */
+  .reward-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
+  .reward-icon { font-size: 42px; flex-shrink: 0; }
+  .reward-info { flex: 1; }
+  .reward-title { font-size: 17px; font-weight: 800; color: var(--text); }
+  .reward-cost { font-size: 14px; font-weight: 700; color: var(--orange); margin-top: 2px; }
+  .redeem-btn { background: linear-gradient(135deg, var(--yellow), var(--orange)); border: none; border-radius: 14px; padding: 12px 16px; font-size: 14px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; color: white; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(255,150,113,0.4); }
+  .redeem-btn:disabled { background: #CCC; box-shadow: none; cursor: default; }
+  .redeem-btn:active:not(:disabled) { transform: scale(0.92); }
+  .pending-request { background: #FFF5FB; border: 2px dashed var(--pink); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .pending-label { font-size: 14px; font-weight: 700; color: var(--pink); }
+
+  /* GROWN-UPS TAB */
+  .parent-gate { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .gate-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+  .gate-sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
+  .math-question { background: white; border-radius: var(--radius); padding: 28px; margin-bottom: 24px; width: 100%; max-width: 340px; box-shadow: var(--shadow); }
+  .math-q { font-size: 28px; font-weight: 900; color: var(--purple); margin-bottom: 16px; }
+  .math-input { width: 100%; padding: 16px; font-size: 28px; font-weight: 900; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; text-align: center; border: 3px solid #EEE; border-radius: 14px; outline: none; color: var(--text); }
+  .math-input:focus { border-color: var(--purple); }
+  .gate-wrong { color: #FF4444; font-size: 14px; font-weight: 700; margin-top: 8px; min-height: 20px; }
+
+  /* PARENT DASHBOARD */
+  .parent-nav { display: flex; gap: 10px; padding: 14px 16px 0; overflow-x: auto; scrollbar-width: none; }
+  .parent-nav::-webkit-scrollbar { display: none; }
+  .parent-nav-btn { padding: 10px 20px; font-size: 14px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid #EEE; border-radius: 20px; background: white; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+  .parent-nav-btn.active { background: var(--purple); border-color: var(--purple); color: white; }
+  .parent-section { display: none; }
+  .parent-section.active { display: block; }
+  
+  .parent-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .parent-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .parent-card-title { font-size: 16px; font-weight: 800; color: var(--text); }
+  .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 4px; border-radius: 8px; transition: transform 0.1s; }
+  .icon-btn:active { transform: scale(0.85); }
+
+  .add-form { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .form-label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 13px 16px; font-size: 16px; font-weight: 600; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid #EEE; border-radius: 12px; outline: none; color: var(--text); }
+  .form-input:focus { border-color: var(--purple); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .form-group { margin-bottom: 14px; }
+  .emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+  .emoji-pick-btn { font-size: 26px; padding: 8px; border: 2px solid transparent; border-radius: 10px; background: #F5F5F5; cursor: pointer; transition: all 0.15s; }
+  .emoji-pick-btn.selected { border-color: var(--purple); background: #F3EEFF; }
+  
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #F5F5F5; }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 16px; font-weight: 700; color: var(--text); }
+  .toggle-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .toggle { width: 50px; height: 28px; background: #DDD; border-radius: 14px; cursor: pointer; transition: background 0.2s; position: relative; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  .toggle.on { background: var(--teal); }
+  .toggle.on::after { transform: translateX(22px); }
+
+  /* APPROVAL PANEL */
+  .approval-item { background: white; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .approval-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .approval-icon { font-size: 30px; }
+  .approval-info { flex: 1; }
+  .approval-title { font-size: 16px; font-weight: 800; color: var(--text); }
+  .approval-child { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .approval-btns { display: flex; gap: 10px; }
+  .approve-btn { flex: 1; padding: 12px; font-size: 15px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: none; border-radius: 12px; cursor: pointer; }
+  .approve-btn.yes { background: var(--green); color: white; }
+  .approve-btn.no { background: #F5F5F5; color: var(--muted); }
+
+  /* MODALS */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 28px 28px 20px 20px; width: 100%; max-width: 440px; padding: 28px 24px; max-height: 85vh; overflow-y: auto; }
+  .modal-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; font-size: 28px; background: none; border: none; cursor: pointer; color: var(--muted); }
+  
+  /* CELEBRATION OVERLAY */
+  #celebration { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); text-align: center; padding: 30px; }
+  #celebration.show { display: flex; animation: fadeIn 0.3s ease; }
+  .celebration-card { background: white; border-radius: 30px; padding: 40px 32px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .celebration-emoji { font-size: 80px; display: block; margin-bottom: 12px; animation: bounce 0.6s infinite; }
+  .celebration-title { font-size: 28px; font-weight: 900; color: var(--purple); margin-bottom: 8px; }
+  .celebration-msg { font-size: 16px; color: var(--muted); margin-bottom: 6px; }
+  .celebration-sticker { font-size: 48px; margin: 12px 0; animation: spin 0.6s ease; }
+  .celebration-points { font-size: 20px; font-weight: 800; color: var(--orange); margin-bottom: 20px; }
+  .celebration-btn { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; border: none; border-radius: 16px; padding: 16px 32px; font-size: 18px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; cursor: pointer; width: 100%; }
+
+  /* LEVEL UP OVERLAY */
+  #levelup { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--purple) 0%, var(--pink) 100%); text-align: center; padding: 30px; }
+  #levelup.show { display: flex; animation: fadeIn 0.3s ease; }
+  .levelup-badge { font-size: 100px; animation: bounce 0.8s infinite; margin-bottom: 16px; }
+  .levelup-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .levelup-name { font-size: 36px; font-weight: 900; color: white; margin-bottom: 12px; }
+  .levelup-sub { font-size: 18px; color: rgba(255,255,255,0.85); margin-bottom: 36px; }
+  .levelup-btn { background: white; color: var(--purple); border: none; border-radius: 16px; padding: 18px 48px; font-size: 20px; font-weight: 900; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+  /* CONFETTI */
+  .confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 999; overflow: hidden; }
+  .confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettiFall linear forwards; opacity: 0; }
+
+  /* TOAST */
+  .toast { position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.85); color: white; border-radius: 20px; padding: 12px 24px; font-size: 15px; font-weight: 700; z-index: 900; opacity: 0; transition: all 0.3s; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ANIMATIONS */
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes wiggle { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+  @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes spin { 0% { transform: rotate(0deg) scale(0); } 50% { transform: rotate(180deg) scale(1.3); } 100% { transform: rotate(360deg) scale(1); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes confettiFall { 0% { opacity: 1; transform: translateY(-10px) rotate(0deg); } 100% { opacity: 0; transform: translateY(100vh) rotate(720deg); } }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .slide-up { animation: slideUp 0.35s ease; }
+
+  /* RESPONSIVE TABLET */
+  @media (min-width: 500px) {
+    .tab-bar { max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
+    .app-header { max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
+  }
+
+  .chip { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .chip-green { background: #E8F8EA; color: var(--green); }
+  .chip-purple { background: #F3EEFF; color: var(--purple); }
+  .chip-orange { background: #FFF3EC; color: var(--orange); }
+
+  .danger-btn { background: #FF4444; color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; cursor: pointer; }
+  .small-btn { padding: 8px 16px; font-size: 13px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid var(--purple); border-radius: 10px; background: none; color: var(--purple); cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- CONFETTI CONTAINER -->
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== SETUP SCREEN ==================== -->
+<div id="screen-setup" class="screen active">
+  <div class="setup-card">
+    <div class="setup-logo">⭐</div>
+    <div class="setup-title">Sticker Quest</div>
+    <div class="setup-sub">Chores + Behavior = Rewards!</div>
+    <div class="progress-dots">
+      <div class="dot active" id="dot-0"></div>
+      <div class="dot" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+    </div>
+
+    <!-- Step 0: Parent name -->
+    <div class="setup-step active" id="step-0">
+      <div class="step-label">👋 What's your name?</div>
+      <input class="input-field" id="parent-name-input" type="text" placeholder="Your name..." maxlength="30" autocomplete="off">
+      <button class="btn-primary" onclick="setupNext(0)">Let's go! 🚀</button>
+    </div>
+
+    <!-- Step 1: Child name -->
+    <div class="setup-step" id="step-1">
+      <div class="step-label">🧒 Your child's name?</div>
+      <input class="input-field" id="child-name-input" type="text" placeholder="Child's name..." maxlength="20" autocomplete="off">
+      <button class="btn-primary" onclick="setupNext(1)">Next →</button>
+    </div>
+
+    <!-- Step 2: Child avatar -->
+    <div class="setup-step" id="step-2">
+      <div class="step-label">🎨 Pick their avatar!</div>
+      <div class="avatar-grid" id="avatar-grid">
+        <button class="avatar-btn selected" data-emoji="🦄" onclick="selectAvatar(this)">🦄</button>
+        <button class="avatar-btn" data-emoji="🦁" onclick="selectAvatar(this)">🦁</button>
+        <button class="avatar-btn" data-emoji="🐸" onclick="selectAvatar(this)">🐸</button>
+        <button class="avatar-btn" data-emoji="🐼" onclick="selectAvatar(this)">🐼</button>
+        <button class="avatar-btn" data-emoji="🐯" onclick="selectAvatar(this)">🐯</button>
+        <button class="avatar-btn" data-emoji="🦊" onclick="selectAvatar(this)">🦊</button>
+        <button class="avatar-btn" data-emoji="🐻" onclick="selectAvatar(this)">🐻</button>
+        <button class="avatar-btn" data-emoji="🦋" onclick="selectAvatar(this)">🦋</button>
+        <button class="avatar-btn" data-emoji="🐙" onclick="selectAvatar(this)">🐙</button>
+        <button class="avatar-btn" data-emoji="🦖" onclick="selectAvatar(this)">🦖</button>
+      </div>
+      <button class="btn-primary" onclick="finishSetup()">Start Quest! ⭐</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP SCREEN ==================== -->
+<div id="screen-app" class="screen">
+  <!-- Header -->
+  <div class="app-header" id="app-header">
+    <div class="child-info">
+      <div class="child-avatar-big" id="header-avatar">🦄</div>
+      <div>
+        <div class="child-name" id="header-name">Emma</div>
+        <div class="child-level" id="header-level">⭐ Tiny Helper</div>
+      </div>
+    </div>
+    <div class="points-badge">
+      <div class="points-num" id="header-points">0</div>
+      <div class="points-label">⭐ Points</div>
+    </div>
+  </div>
+  <div class="xp-bar-wrap">
+    <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+    <div class="xp-bar-label" id="xp-label">0 / 50 to next level</div>
+  </div>
+
+  <!-- Tab Content Area -->
+  <div class="tab-content" id="tab-today" style="display:flex;flex-direction:column;">
+    <!-- Streak -->
+    <div class="streak-banner" id="streak-banner" style="display:none">
+      <div class="streak-fire">🔥</div>
+      <div>
+        <div class="streak-count" id="streak-count">3</div>
+        <div class="streak-text">Day Streak! Keep it up!</div>
+      </div>
+    </div>
+    <div class="section-title">📋 Today's Quests</div>
+    <div id="task-list"></div>
+    <div class="empty-state" id="task-empty" style="display:none">
+      <div class="empty-emoji">🎉</div>
+      <div class="empty-title">All done for today!</div>
+      <div class="empty-sub">You're a superstar. Come back tomorrow!</div>
+    </div>
+    <div class="empty-state" id="task-none" style="display:none">
+      <div class="empty-emoji">📝</div>
+      <div class="empty-title">No quests yet!</div>
+      <div class="empty-sub">Ask a grown-up to add some chores for you.</div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-stickers" style="display:none;flex-direction:column;">
+    <div class="sticker-count-banner">
+      <div class="sticker-count-icon">✨</div>
+      <div>
+        <div class="sticker-count-text" id="sticker-count-text">0 Stickers</div>
+        <div class="sticker-count-sub">Earned from completing quests!</div>
+      </div>
+    </div>
+    <div class="section-title">🌟 My Sticker Book</div>
+    <div class="sticker-pack-label">Animals</div>
+    <div class="sticker-grid" id="sticker-animals"></div>
+    <div class="sticker-pack-label">Space & Nature</div>
+    <div class="sticker-grid" id="sticker-space"></div>
+    <div class="sticker-pack-label">Fun & Food</div>
+    <div class="sticker-grid" id="sticker-fun"></div>
+  </div>
+
+  <div class="tab-content" id="tab-rewards" style="display:none;flex-direction:column;">
+    <div class="section-title">🎁 Reward Store</div>
+    <div id="pending-requests-area"></div>
+    <div id="reward-list"></div>
+    <div class="empty-state" id="reward-none" style="display:none">
+      <div class="empty-emoji">🎀</div>
+      <div class="empty-title">No rewards yet!</div>
+      <div class="empty-sub">Ask a grown-up to add some cool rewards.</div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-parents" style="display:none;flex-direction:column;">
+    <!-- Parent Gate or Dashboard -->
+    <div id="parent-gate-view">
+      <div class="parent-gate">
+        <div style="font-size:60px;margin-bottom:16px">🔒</div>
+        <div class="gate-title">Grown-Ups Only!</div>
+        <div class="gate-sub">Answer this question to unlock</div>
+        <div class="math-question">
+          <div class="math-q" id="math-question-text">5 + 3 = ?</div>
+          <input class="math-input" id="math-answer" type="number" placeholder="?" inputmode="numeric" onkeydown="if(event.key==='Enter')checkGate()">
+          <div class="gate-wrong" id="gate-wrong"></div>
+        </div>
+        <button class="btn-primary" style="max-width:300px;margin-top:0" onclick="checkGate()">Unlock 🔓</button>
+      </div>
+    </div>
+    
+    <div id="parent-dashboard-view" style="display:none">
+      <div class="parent-nav">
+        <button class="parent-nav-btn active" onclick="switchParentTab('approvals')">✅ Approvals <span id="approval-badge" style="display:none"></span></button>
+        <button class="parent-nav-btn" onclick="switchParentTab('tasks')">📋 Tasks</button>
+        <button class="parent-nav-btn" onclick="switchParentTab('rewards')">🎁 Rewards</button>
+        <button class="parent-nav-btn" onclick="switchParentTab('children')">🧒 Kids</button>
+        <button class="parent-nav-btn" onclick="switchParentTab('settings')">⚙️ Settings</button>
+      </div>
+      <div class="tab-content" style="padding-top:16px">
+        <!-- Approvals -->
+        <div class="parent-section active" id="p-approvals">
+          <div class="section-title">✅ Pending Approvals</div>
+          <div id="approval-list"></div>
+          <div class="empty-state" id="approval-empty" style="display:none">
+            <div class="empty-emoji">✅</div>
+            <div class="empty-title">All caught up!</div>
+            <div class="empty-sub">No approvals waiting.</div>
+          </div>
+        </div>
+
+        <!-- Tasks -->
+        <div class="parent-section" id="p-tasks">
+          <div class="section-title">📋 Manage Quests</div>
+          <div class="add-form" id="add-task-form">
+            <div style="font-size:15px;font-weight:800;color:var(--purple);margin-bottom:14px">➕ Add New Quest</div>
+            <div class="form-group">
+              <label class="form-label">Quest Name</label>
+              <input class="form-input" id="new-task-title" placeholder="Make bed, Brush teeth..." maxlength="40">
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Icon</label>
+                <div class="emoji-picker" id="task-icon-picker">
+                  <button class="emoji-pick-btn selected" data-emoji="🛏️" onclick="pickTaskIcon(this)">🛏️</button>
+                  <button class="emoji-pick-btn" data-emoji="🦷" onclick="pickTaskIcon(this)">🦷</button>
+                  <button class="emoji-pick-btn" data-emoji="🧸" onclick="pickTaskIcon(this)">🧸</button>
+                  <button class="emoji-pick-btn" data-emoji="🍽️" onclick="pickTaskIcon(this)">🍽️</button>
+                  <button class="emoji-pick-btn" data-emoji="🐾" onclick="pickTaskIcon(this)">🐾</button>
+                  <button class="emoji-pick-btn" data-emoji="👐" onclick="pickTaskIcon(this)">👐</button>
+                  <button class="emoji-pick-btn" data-emoji="📚" onclick="pickTaskIcon(this)">📚</button>
+                  <button class="emoji-pick-btn" data-emoji="🧺" onclick="pickTaskIcon(this)">🧺</button>
+                  <button class="emoji-pick-btn" data-emoji="🌱" onclick="pickTaskIcon(this)">🌱</button>
+                  <button class="emoji-pick-btn" data-emoji="❤️" onclick="pickTaskIcon(this)">❤️</button>
+                  <button class="emoji-pick-btn" data-emoji="👂" onclick="pickTaskIcon(this)">👂</button>
+                  <button class="emoji-pick-btn" data-emoji="🎯" onclick="pickTaskIcon(this)">🎯</button>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Points</label>
+                <input class="form-input" id="new-task-points" type="number" value="10" min="1" max="100">
+              </div>
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Schedule</label>
+                <select class="form-input" id="new-task-schedule">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">For child</label>
+                <select class="form-input" id="new-task-child"></select>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Parent Approval</div><div class="toggle-sub">Require your OK first</div></div>
+              <div class="toggle" id="task-approval-toggle" onclick="toggleEl('task-approval-toggle')"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:14px" onclick="addTask()">Add Quest ✓</button>
+          </div>
+          <div id="task-manage-list"></div>
+        </div>
+
+        <!-- Rewards -->
+        <div class="parent-section" id="p-rewards">
+          <div class="section-title">🎁 Manage Rewards</div>
+          <div class="add-form">
+            <div style="font-size:15px;font-weight:800;color:var(--purple);margin-bottom:14px">➕ Add New Reward</div>
+            <div class="form-group">
+              <label class="form-label">Reward Name</label>
+              <input class="form-input" id="new-reward-title" placeholder="Movie night, Ice cream..." maxlength="40">
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Icon</label>
+                <div class="emoji-picker" id="reward-icon-picker">
+                  <button class="emoji-pick-btn selected" data-emoji="🎬" onclick="pickRewardIcon(this)">🎬</button>
+                  <button class="emoji-pick-btn" data-emoji="🍦" onclick="pickRewardIcon(this)">🍦</button>
+                  <button class="emoji-pick-btn" data-emoji="🎮" onclick="pickRewardIcon(this)">🎮</button>
+                  <button class="emoji-pick-btn" data-emoji="🏖️" onclick="pickRewardIcon(this)">🏖️</button>
+                  <button class="emoji-pick-btn" data-emoji="🎁" onclick="pickRewardIcon(this)">🎁</button>
+                  <button class="emoji-pick-btn" data-emoji="🍕" onclick="pickRewardIcon(this)">🍕</button>
+                  <button class="emoji-pick-btn" data-emoji="🎯" onclick="pickRewardIcon(this)">🎯</button>
+                  <button class="emoji-pick-btn" data-emoji="📱" onclick="pickRewardIcon(this)">📱</button>
+                  <button class="emoji-pick-btn" data-emoji="🌈" onclick="pickRewardIcon(this)">🌈</button>
+                  <button class="emoji-pick-btn" data-emoji="⭐" onclick="pickRewardIcon(this)">⭐</button>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Point Cost</label>
+                <input class="form-input" id="new-reward-points" type="number" value="50" min="1" max="9999">
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Requires Approval</div><div class="toggle-sub">Must OK before redeeming</div></div>
+              <div class="toggle on" id="reward-approval-toggle" onclick="toggleEl('reward-approval-toggle')"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:14px" onclick="addReward()">Add Reward ✓</button>
+          </div>
+          <div id="reward-manage-list"></div>
+        </div>
+
+        <!-- Children -->
+        <div class="parent-section" id="p-children">
+          <div class="section-title">🧒 Kids</div>
+          <div id="children-list"></div>
+          <div class="add-form" id="add-child-form" style="margin-top:16px">
+            <div style="font-size:15px;font-weight:800;color:var(--purple);margin-bottom:14px">➕ Add Another Child</div>
+            <div class="form-group">
+              <label class="form-label">Child's Name</label>
+              <input class="form-input" id="new-child-name" placeholder="Name..." maxlength="20">
+            </div>
+            <label class="form-label">Pick Avatar</label>
+            <div class="avatar-grid" id="new-child-avatar-grid" style="margin-bottom:14px">
+              <button class="avatar-btn selected" data-emoji="🐶" onclick="selectNewChildAvatar(this)">🐶</button>
+              <button class="avatar-btn" data-emoji="🐱" onclick="selectNewChildAvatar(this)">🐱</button>
+              <button class="avatar-btn" data-emoji="🐸" onclick="selectNewChildAvatar(this)">🐸</button>
+              <button class="avatar-btn" data-emoji="🐙" onclick="selectNewChildAvatar(this)">🐙</button>
+              <button class="avatar-btn" data-emoji="🦊" onclick="selectNewChildAvatar(this)">🦊</button>
+              <button class="avatar-btn" data-emoji="🐧" onclick="selectNewChildAvatar(this)">🐧</button>
+              <button class="avatar-btn" data-emoji="🦋" onclick="selectNewChildAvatar(this)">🦋</button>
+              <button class="avatar-btn" data-emoji="🦄" onclick="selectNewChildAvatar(this)">🦄</button>
+              <button class="avatar-btn" data-emoji="🐻" onclick="selectNewChildAvatar(this)">🐻</button>
+              <button class="avatar-btn" data-emoji="🦁" onclick="selectNewChildAvatar(this)">🦁</button>
+            </div>
+            <button class="btn-primary" style="margin-top:0" onclick="addChild()">Add Child ✓</button>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="parent-section" id="p-settings">
+          <div class="section-title">⚙️ Settings</div>
+          <div class="parent-card">
+            <div class="toggle-row">
+              <div><div class="toggle-label">🔊 Sound Effects</div><div class="toggle-sub">Celebration sounds</div></div>
+              <div class="toggle on" id="setting-sound" onclick="toggleSetting('sound')"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">✨ Calm Mode</div><div class="toggle-sub">Reduce animations</div></div>
+              <div class="toggle" id="setting-calm" onclick="toggleSetting('calm')"></div>
+            </div>
+          </div>
+          <div class="parent-card" style="margin-top:4px">
+            <div class="parent-card-title" style="margin-bottom:12px">🔄 Switch Child</div>
+            <div id="child-switcher"></div>
+          </div>
+          <div class="parent-card" style="margin-top:4px">
+            <div class="parent-card-title" style="margin-bottom:12px">🔒 Change Parent Gate</div>
+            <div style="font-size:14px;color:var(--muted)">Currently: Math question<br>A random math problem must be solved to access this area.</div>
+          </div>
+          <div class="parent-card" style="margin-top:4px">
+            <div class="parent-card-title" style="margin-bottom:12px;color:#FF4444">⚠️ Reset Data</div>
+            <div style="font-size:14px;color:var(--muted);margin-bottom:12px">Reset all progress for the selected child. Cannot be undone!</div>
+            <button class="danger-btn" onclick="confirmReset()">Reset Child Data</button>
+          </div>
+          <div class="parent-card" style="margin-top:4px">
+            <div style="font-size:13px;color:var(--muted);text-align:center;line-height:1.6">
+              <strong>🔒 Privacy First</strong><br>
+              All data is stored only on this device.<br>
+              No accounts, no servers, no tracking.<br>
+              Your family's data never leaves this phone.<br><br>
+              <a href="privacy.html" style="color:var(--purple);font-weight:700;text-decoration:none">Privacy Policy</a>
+            </div>
+          </div>
+          <div style="padding:20px 0;text-align:center">
+            <button class="small-btn" onclick="lockParent()">🔒 Lock Grown-Ups Section</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabBtn-today" onclick="switchTab('today')">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Today</span>
+    </button>
+    <button class="tab-btn" id="tabBtn-stickers" onclick="switchTab('stickers')">
+      <span class="tab-icon">⭐</span>
+      <span class="tab-label">Stickers</span>
+    </button>
+    <button class="tab-btn" id="tabBtn-rewards" onclick="switchTab('rewards')">
+      <span class="tab-icon">🎁</span>
+      <span class="tab-label">Rewards</span>
+    </button>
+    <button class="tab-btn" id="tabBtn-parents" onclick="switchTab('parents')">
+      <span class="tab-icon">👑</span>
+      <span class="tab-label">Grown-Ups</span>
+    </button>
+  </div>
+</div>
+
+<!-- ==================== CELEBRATION OVERLAY ==================== -->
+<div id="celebration">
+  <div class="celebration-card">
+    <span class="celebration-emoji" id="cel-emoji">🎉</span>
+    <div class="celebration-title" id="cel-title">Amazing job!</div>
+    <div class="celebration-msg" id="cel-msg">You completed a quest!</div>
+    <div class="celebration-sticker" id="cel-sticker">⭐</div>
+    <div class="celebration-points" id="cel-points">+10 ⭐ Points</div>
+    <button class="celebration-btn" onclick="closeCelebration()">Woohoo! 🎉</button>
+  </div>
+</div>
+
+<!-- ==================== LEVEL UP OVERLAY ==================== -->
+<div id="levelup">
+  <div class="levelup-badge" id="lu-badge">🏆</div>
+  <div class="levelup-title">LEVEL UP!</div>
+  <div class="levelup-name" id="lu-name">Super Helper!</div>
+  <div class="levelup-sub" id="lu-sub">You're doing amazing! ✨</div>
+  <button class="levelup-btn" onclick="closeLevelUp()">Let's go! 🚀</button>
+</div>
+
+<script>
+// ========== STICKER DATA ==========
+const STICKER_PACKS = {
+  animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐸','🐨','🐯','🦁','🦄','🐔','🐧','🐦','🦆','🦋','🐢','🐙','🦀','🐡'],
+  space:   ['⭐','🌟','💫','✨','🌈','☀️','🌙','🪐','🚀','🛸','🌺','🌸','🌻','🌊','🏔️','🌍','🦜','🌿','🍀','🌴'],
+  fun:     ['🎉','🎈','🎀','🎁','🍭','🍦','🍰','🎂','🧁','🍩','🍕','🌮','🎮','🎯','⚽','🏆','🥇','💎','🎸','🎨']
+};
+const ALL_STICKERS = [...STICKER_PACKS.animals, ...STICKER_PACKS.space, ...STICKER_PACKS.fun];
+
+const LEVELS = [
+  { name: 'Tiny Helper',     min: 0,   max: 49,  badge: '🌱' },
+  { name: 'Super Helper',    min: 50,  max: 149, badge: '⭐' },
+  { name: 'Mega Helper',     min: 150, max: 299, badge: '🌟' },
+  { name: 'Kindness Captain',min: 300, max: 499, badge: '💫' },
+  { name: 'Chore Champion',  min: 500, max: 99999,badge: '🏆' }
+];
+
+const PRAISE = [
+  'Amazing work!', 'You rock!', "That's so helpful!", 'Great effort!',
+  "You're learning!", 'Super job!', 'Awesome helper!', 'Way to go!'
+];
+
+// ========== STATE ==========
+let STATE = {};
+let mathAnswer = 0;
+let parentUnlocked = false;
+let currentTab = 'today';
+let currentParentTab = 'approvals';
+
+function today() { return new Date().toISOString().slice(0, 10); }
+function uid() { return '_' + Math.random().toString(36).substr(2, 9); }
+
+function saveState() { localStorage.setItem('sq_state', JSON.stringify(STATE)); }
+
+function loadState() {
+  const raw = localStorage.getItem('sq_state');
+  if (raw) {
+    STATE = JSON.parse(raw);
+    return true;
+  }
+  return false;
+}
+
+function initDefaultRewards() {
+  return [
+    { id: uid(), title: 'Movie Night', icon: '🎬', pointCost: 50, requiresApproval: true },
+    { id: uid(), title: 'Ice Cream Treat', icon: '🍦', pointCost: 30, requiresApproval: false },
+    { id: uid(), title: 'Extra Screen Time', icon: '📱', pointCost: 40, requiresApproval: true },
+    { id: uid(), title: 'Choose Dinner', icon: '🍕', pointCost: 60, requiresApproval: true },
+    { id: uid(), title: 'Stay Up 30 Min Late', icon: '🌙', pointCost: 80, requiresApproval: true }
+  ];
+}
+
+// ========== SETUP ==========
+let setupData = { parentName: '', childName: '', childAvatar: '🦄' };
+
+function selectAvatar(btn) {
+  document.querySelectorAll('#avatar-grid .avatar-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  setupData.childAvatar = btn.dataset.emoji;
+}
+
+function setupNext(step) {
+  if (step === 0) {
+    const v = document.getElementById('parent-name-input').value.trim();
+    if (!v) { showToast('Please enter your name!'); return; }
+    setupData.parentName = v;
+  } else if (step === 1) {
+    const v = document.getElementById('child-name-input').value.trim();
+    if (!v) { showToast('Please enter your child\'s name!'); return; }
+    setupData.childName = v;
+  }
+  document.getElementById(`step-${step}`).classList.remove('active');
+  document.getElementById(`dot-${step}`).classList.remove('active');
+  document.getElementById(`dot-${step}`).classList.add('done');
+  document.getElementById(`step-${step + 1}`).classList.add('active');
+  document.getElementById(`dot-${step + 1}`).classList.add('active');
+}
+
+function finishSetup() {
+  const childId = uid();
+  STATE = {
+    parentName: setupData.parentName,
+    children: [{
+      id: childId, name: setupData.childName, avatar: setupData.childAvatar,
+      points: 0, level: 0, streak: 0, lastCompletionDate: '', stickers: [], completions: {}
+    }],
+    activeChildId: childId,
+    tasks: [
+      { id: uid(), childId, title: 'Make Bed', icon: '🛏️', points: 10, schedule: 'daily', requiresApproval: false },
+      { id: uid(), childId, title: 'Brush Teeth', icon: '🦷', points: 10, schedule: 'daily', requiresApproval: false },
+      { id: uid(), childId, title: 'Clean Up Toys', icon: '🧸', points: 15, schedule: 'daily', requiresApproval: false },
+      { id: uid(), childId, title: 'Kind Words', icon: '❤️', points: 15, schedule: 'daily', requiresApproval: true }
+    ],
+    rewards: initDefaultRewards(),
+    rewardRequests: [],
+    settings: { sound: true, calm: false }
+  };
+  saveState();
+  showApp();
+}
+
+// ========== MAIN APP ==========
+function showApp() {
+  document.getElementById('screen-setup').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  renderAll();
+  generateMathQuestion();
+}
+
+function getActiveChild() {
+  return STATE.children.find(c => c.id === STATE.activeChildId);
+}
+
+function getLevelInfo(points) {
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (points >= LEVELS[i].min) return { index: i, ...LEVELS[i] };
+  }
+  return { index: 0, ...LEVELS[0] };
+}
+
+function renderAll() {
+  renderHeader();
+  renderToday();
+  renderStickers();
+  renderRewards();
+  renderParentApprovals();
+  renderTaskManage();
+  renderRewardManage();
+  renderChildren();
+  renderChildSwitcher();
+  renderSettings();
+  updateTaskChildSelect();
+}
+
+function renderHeader() {
+  const child = getActiveChild();
+  if (!child) return;
+  document.getElementById('header-avatar').textContent = child.avatar;
+  document.getElementById('header-name').textContent = child.name;
+  const lvl = getLevelInfo(child.points);
+  document.getElementById('header-level').textContent = `${lvl.badge} ${lvl.name}`;
+  document.getElementById('header-points').textContent = child.points;
+  const nextLvl = LEVELS[Math.min(lvl.index + 1, LEVELS.length - 1)];
+  const pct = lvl.index === LEVELS.length - 1 ? 100 :
+    Math.min(100, ((child.points - lvl.min) / (nextLvl.min - lvl.min)) * 100);
+  document.getElementById('xp-bar').style.width = pct + '%';
+  if (lvl.index === LEVELS.length - 1) {
+    document.getElementById('xp-label').textContent = '🏆 MAX LEVEL!';
+  } else {
+    document.getElementById('xp-label').textContent = `${child.points - lvl.min} / ${nextLvl.min - lvl.min} to ${nextLvl.name}`;
+  }
+}
+
+function renderToday() {
+  const child = getActiveChild();
+  if (!child) return;
+  const t = today();
+  const tasks = STATE.tasks.filter(tk => tk.childId === child.id);
+  const list = document.getElementById('task-list');
+  const emptyAll = document.getElementById('task-empty');
+  const emptyNone = document.getElementById('task-none');
+  const streakBanner = document.getElementById('streak-banner');
+
+  // Streak
+  if (child.streak >= 2) {
+    streakBanner.style.display = 'flex';
+    document.getElementById('streak-count').textContent = `${child.streak} Day`;
+  } else {
+    streakBanner.style.display = 'none';
+  }
+
+  if (tasks.length === 0) {
+    list.innerHTML = '';
+    emptyAll.style.display = 'none';
+    emptyNone.style.display = 'block';
+    return;
+  }
+
+  const allDone = tasks.every(tk => isDoneToday(tk, child, t));
+  emptyAll.style.display = allDone ? 'block' : 'none';
+  emptyNone.style.display = 'none';
+  list.innerHTML = '';
+
+  tasks.forEach(tk => {
+    const done = isDoneToday(tk, child, t);
+    const pendingApproval = (tk.requiresApproval && isPendingApproval(tk, child));
+    const div = document.createElement('div');
+    div.className = `task-card${done ? ' done' : ''} slide-up`;
+    div.innerHTML = `
+      <div class="task-icon">${tk.icon}</div>
+      <div class="task-info">
+        <div class="task-title">${tk.title}</div>
+        <div class="task-points">+${tk.points} ⭐ pts</div>
+        ${pendingApproval ? '<div class="task-waiting">⏳ Waiting for grown-up...</div>' : ''}
+      </div>
+      ${done ? `<div class="done-check">✅</div>` :
+        pendingApproval ? `<div class="waiting-chip">⏳</div>` :
+        `<button class="did-it-btn" onclick="completeTask('${tk.id}')">I DID IT! 🎉</button>`}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function isDoneToday(task, child, t) {
+  const completions = child.completions[task.id] || [];
+  return completions.includes(t);
+}
+
+function isPendingApproval(task, child) {
+  return STATE.rewardRequests.some(r => r.taskId === task.id && r.childId === child.id && !r.approved && r.date === today());
+}
+
+function completeTask(taskId) {
+  const child = getActiveChild();
+  const task = STATE.tasks.find(t => t.id === taskId);
+  if (!task || !child) return;
+  const t = today();
+  if (isDoneToday(task, child, t)) return;
+
+  if (task.requiresApproval) {
+    // Add to pending approvals
+    STATE.rewardRequests.push({ id: uid(), taskId, childId: child.id, type: 'task', date: t, title: task.title, icon: task.icon, points: task.points });
+    saveState();
+    renderToday();
+    showToast(`⏳ Waiting for grown-up approval!`);
+    return;
+  }
+
+  // Award immediately
+  awardTask(child, task, t);
+}
+
+function awardTask(child, task, t) {
+  if (!child.completions[task.id]) child.completions[task.id] = [];
+  child.completions[task.id].push(t);
+
+  const oldLevel = getLevelInfo(child.points).index;
+  child.points += task.points;
+
+  // Streak
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (child.lastCompletionDate === yesterday || child.lastCompletionDate === t) {
+    if (child.lastCompletionDate !== t) child.streak = (child.streak || 0) + 1;
+  } else {
+    child.streak = 1;
+  }
+  child.lastCompletionDate = t;
+
+  // Sticker
+  const unearned = ALL_STICKERS.filter(s => !child.stickers.includes(s));
+  let sticker = '⭐';
+  if (unearned.length > 0) {
+    sticker = unearned[Math.floor(Math.random() * unearned.length)];
+    child.stickers.push(sticker);
+  }
+
+  const newLevel = getLevelInfo(child.points).index;
+  saveState();
+  renderAll();
+
+  // Show celebration
+  const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+  showCelebration(task.icon, praise, task.title, sticker, task.points);
+
+  // Confetti
+  if (!STATE.settings.calm) launchConfetti();
+
+  // Level up?
+  if (newLevel > oldLevel) {
+    setTimeout(() => showLevelUp(newLevel), 1800);
+  }
+}
+
+function showCelebration(emoji, title, taskName, sticker, points) {
+  document.getElementById('cel-emoji').textContent = emoji;
+  document.getElementById('cel-title').textContent = title;
+  document.getElementById('cel-msg').textContent = `"${taskName}" complete!`;
+  document.getElementById('cel-sticker').textContent = sticker;
+  document.getElementById('cel-points').textContent = `+${points} ⭐ Points earned!`;
+  document.getElementById('celebration').classList.add('show');
+}
+
+function closeCelebration() {
+  document.getElementById('celebration').classList.remove('show');
+}
+
+function showLevelUp(levelIndex) {
+  const lvl = LEVELS[levelIndex];
+  document.getElementById('lu-badge').textContent = lvl.badge;
+  document.getElementById('lu-name').textContent = lvl.name + '!';
+  document.getElementById('lu-sub').textContent = `You're doing amazing! ✨`;
+  document.getElementById('levelup').classList.add('show');
+  if (!STATE.settings.calm) launchConfetti();
+}
+
+function closeLevelUp() {
+  document.getElementById('levelup').classList.remove('show');
+}
+
+// ========== STICKERS ==========
+function renderStickers() {
+  const child = getActiveChild();
+  if (!child) return;
+  document.getElementById('sticker-count-text').textContent = `${child.stickers.length} Sticker${child.stickers.length !== 1 ? 's' : ''}`;
+  ['animals', 'space', 'fun'].forEach(pack => {
+    const grid = document.getElementById(`sticker-${pack}`);
+    grid.innerHTML = '';
+    STICKER_PACKS[pack].forEach(s => {
+      const el = document.createElement('div');
+      const earned = child.stickers.includes(s);
+      el.className = `sticker-slot${earned ? '' : ' locked'}`;
+      el.textContent = s;
+      grid.appendChild(el);
+    });
+  });
+}
+
+// ========== REWARDS ==========
+function renderRewards() {
+  const child = getActiveChild();
+  if (!child) return;
+  const list = document.getElementById('reward-list');
+  const none = document.getElementById('reward-none');
+  const pending = document.getElementById('pending-requests-area');
+
+  // Show pending redemption requests for THIS child
+  const childRequests = STATE.rewardRequests.filter(r => r.childId === child.id && r.type === 'reward' && !r.approved);
+  pending.innerHTML = '';
+  childRequests.forEach(req => {
+    const el = document.createElement('div');
+    el.className = 'pending-request';
+    el.innerHTML = `<span style="font-size:28px">${req.icon}</span><div><div class="pending-label">⏳ ${req.title}</div><div style="font-size:12px;color:var(--muted)">Waiting for grown-up approval</div></div>`;
+    pending.appendChild(el);
+  });
+
+  if (STATE.rewards.length === 0) {
+    list.innerHTML = ''; none.style.display = 'block'; return;
+  }
+  none.style.display = 'none';
+  list.innerHTML = '';
+  STATE.rewards.forEach(r => {
+    const canAfford = child.points >= r.pointCost;
+    const hasPending = STATE.rewardRequests.some(req => req.rewardId === r.id && req.childId === child.id && !req.approved);
+    const div = document.createElement('div');
+    div.className = 'reward-card';
+    div.innerHTML = `
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-info">
+        <div class="reward-title">${r.title}</div>
+        <div class="reward-cost">${r.pointCost} ⭐ points</div>
+        ${hasPending ? '<div style="font-size:12px;color:var(--purple);font-weight:700">⏳ Waiting...</div>' : ''}
+      </div>
+      <button class="redeem-btn" ${(!canAfford || hasPending) ? 'disabled' : ''} onclick="redeemReward('${r.id}')">
+        ${hasPending ? '⏳' : canAfford ? 'Redeem!' : `Need<br>${r.pointCost - child.points} more`}
+      </button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function redeemReward(rewardId) {
+  const child = getActiveChild();
+  const reward = STATE.rewards.find(r => r.id === rewardId);
+  if (!reward || !child) return;
+  if (child.points < reward.pointCost) return;
+
+  if (reward.requiresApproval) {
+    STATE.rewardRequests.push({ id: uid(), rewardId, childId: child.id, type: 'reward', date: today(), title: reward.title, icon: reward.icon, points: reward.pointCost });
+    saveState();
+    renderRewards();
+    renderParentApprovals();
+    showToast(`⏳ Asked a grown-up for ${reward.title}!`);
+  } else {
+    child.points -= reward.pointCost;
+    saveState();
+    renderAll();
+    showToast(`🎉 Enjoy your ${reward.title}!`);
+    if (!STATE.settings.calm) launchConfetti();
+  }
+}
+
+// ========== PARENT GATE ==========
+function generateMathQuestion() {
+  const a = Math.floor(Math.random() * 8) + 2;
+  const b = Math.floor(Math.random() * 8) + 2;
+  const ops = ['+', '-', '+'];
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  const q = op === '-' ? `${a + b} - ${a}` : `${a} + ${b}`;
+  mathAnswer = op === '-' ? b : a + b;
+  document.getElementById('math-question-text').textContent = q + ' = ?';
+  document.getElementById('math-answer').value = '';
+  document.getElementById('gate-wrong').textContent = '';
+}
+
+function checkGate() {
+  const val = parseInt(document.getElementById('math-answer').value);
+  if (val === mathAnswer) {
+    parentUnlocked = true;
+    document.getElementById('parent-gate-view').style.display = 'none';
+    document.getElementById('parent-dashboard-view').style.display = 'block';
+    renderParentApprovals();
+    renderTaskManage();
+    renderRewardManage();
+    renderChildren();
+    renderChildSwitcher();
+    renderSettings();
+  } else {
+    document.getElementById('gate-wrong').textContent = '❌ Not quite! Try again.';
+    generateMathQuestion();
+    setTimeout(() => { document.getElementById('gate-wrong').textContent = ''; }, 2000);
+  }
+}
+
+function lockParent() {
+  parentUnlocked = false;
+  document.getElementById('parent-gate-view').style.display = 'block';
+  document.getElementById('parent-dashboard-view').style.display = 'none';
+  generateMathQuestion();
+  showToast('🔒 Grown-Ups section locked');
+}
+
+// ========== PARENT: APPROVALS ==========
+function renderParentApprovals() {
+  const list = document.getElementById('approval-list');
+  const empty = document.getElementById('approval-empty');
+  const pending = STATE.rewardRequests.filter(r => !r.approved);
+
+  // Badge
+  const badge = document.getElementById('approval-badge');
+  if (pending.length > 0) {
+    badge.style.display = 'inline'; badge.textContent = ` (${pending.length})`;
+  } else { badge.style.display = 'none'; }
+
+  if (pending.length === 0) {
+    list.innerHTML = ''; empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+  pending.forEach(req => {
+    const child = STATE.children.find(c => c.id === req.childId);
+    const div = document.createElement('div');
+    div.className = 'approval-item';
+    div.innerHTML = `
+      <div class="approval-header">
+        <div class="approval-icon">${req.icon}</div>
+        <div class="approval-info">
+          <div class="approval-title">${req.type === 'task' ? '✅ Task: ' : '🎁 Reward: '}${req.title}</div>
+          <div class="approval-child">${child ? child.avatar + ' ' + child.name : 'Unknown'} · ${req.type === 'task' ? '+' + req.points + ' pts' : req.points + ' pts cost'}</div>
+        </div>
+      </div>
+      <div class="approval-btns">
+        <button class="approve-btn yes" onclick="handleApproval('${req.id}', true)">✅ Approve</button>
+        <button class="approve-btn no" onclick="handleApproval('${req.id}', false)">❌ Deny</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function handleApproval(reqId, approved) {
+  const req = STATE.rewardRequests.find(r => r.id === reqId);
+  if (!req) return;
+  const child = STATE.children.find(c => c.id === req.childId);
+  if (!child) return;
+
+  if (approved) {
+    if (req.type === 'task') {
+      const task = STATE.tasks.find(t => t.id === req.taskId);
+      if (task) awardTask(child, task, req.date);
+    } else if (req.type === 'reward') {
+      if (child.points >= req.points) {
+        child.points -= req.points;
+        showToast(`🎉 ${child.name} earned ${req.title}!`);
+      } else {
+        showToast(`Not enough points!`); 
+      }
+    }
+  } else {
+    showToast(`Denied "${req.title}"`);
+  }
+  STATE.rewardRequests = STATE.rewardRequests.filter(r => r.id !== reqId);
+  saveState();
+  renderAll();
+}
+
+// ========== PARENT: TASKS ==========
+function updateTaskChildSelect() {
+  const sel = document.getElementById('new-task-child');
+  if (!sel) return;
+  sel.innerHTML = STATE.children.map(c => `<option value="${c.id}">${c.avatar} ${c.name}</option>`).join('');
+}
+
+function pickTaskIcon(btn) {
+  document.querySelectorAll('#task-icon-picker .emoji-pick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function addTask() {
+  const title = document.getElementById('new-task-title').value.trim();
+  if (!title) { showToast('Please enter a quest name!'); return; }
+  const icon = document.querySelector('#task-icon-picker .emoji-pick-btn.selected')?.dataset.emoji || '⭐';
+  const points = parseInt(document.getElementById('new-task-points').value) || 10;
+  const schedule = document.getElementById('new-task-schedule').value;
+  const childId = document.getElementById('new-task-child').value || STATE.activeChildId;
+  const requiresApproval = document.getElementById('task-approval-toggle').classList.contains('on');
+  STATE.tasks.push({ id: uid(), childId, title, icon, points, schedule, requiresApproval });
+  saveState();
+  document.getElementById('new-task-title').value = '';
+  renderTaskManage();
+  renderToday();
+  showToast(`✅ Quest "${title}" added!`);
+}
+
+function renderTaskManage() {
+  const list = document.getElementById('task-manage-list');
+  if (!list) return;
+  list.innerHTML = '';
+  STATE.tasks.forEach(tk => {
+    const child = STATE.children.find(c => c.id === tk.childId);
+    const div = document.createElement('div');
+    div.className = 'parent-card';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:30px">${tk.icon}</span>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:15px">${tk.title}</div>
+          <div style="font-size:12px;color:var(--muted)">${child ? child.avatar + ' ' + child.name : ''} · ${tk.points} pts · ${tk.schedule}${tk.requiresApproval ? ' · needs approval' : ''}</div>
+        </div>
+        <button class="icon-btn" onclick="deleteTask('${tk.id}')">🗑️</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function deleteTask(id) {
+  STATE.tasks = STATE.tasks.filter(t => t.id !== id);
+  saveState();
+  renderTaskManage();
+  renderToday();
+  showToast('Quest removed');
+}
+
+// ========== PARENT: REWARDS ==========
+function pickRewardIcon(btn) {
+  document.querySelectorAll('#reward-icon-picker .emoji-pick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function addReward() {
+  const title = document.getElementById('new-reward-title').value.trim();
+  if (!title) { showToast('Please enter a reward name!'); return; }
+  const icon = document.querySelector('#reward-icon-picker .emoji-pick-btn.selected')?.dataset.emoji || '🎁';
+  const pointCost = parseInt(document.getElementById('new-reward-points').value) || 50;
+  const requiresApproval = document.getElementById('reward-approval-toggle').classList.contains('on');
+  STATE.rewards.push({ id: uid(), title, icon, pointCost, requiresApproval });
+  saveState();
+  document.getElementById('new-reward-title').value = '';
+  renderRewardManage();
+  renderRewards();
+  showToast(`🎁 Reward "${title}" added!`);
+}
+
+function renderRewardManage() {
+  const list = document.getElementById('reward-manage-list');
+  if (!list) return;
+  list.innerHTML = '';
+  STATE.rewards.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'parent-card';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:30px">${r.icon}</span>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:15px">${r.title}</div>
+          <div style="font-size:12px;color:var(--muted)">${r.pointCost} pts${r.requiresApproval ? ' · needs approval' : ''}</div>
+        </div>
+        <button class="icon-btn" onclick="deleteReward('${r.id}')">🗑️</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function deleteReward(id) {
+  STATE.rewards = STATE.rewards.filter(r => r.id !== id);
+  saveState();
+  renderRewardManage();
+  renderRewards();
+  showToast('Reward removed');
+}
+
+// ========== PARENT: CHILDREN ==========
+function renderChildren() {
+  const list = document.getElementById('children-list');
+  if (!list) return;
+  list.innerHTML = '';
+  STATE.children.forEach(c => {
+    const lvl = getLevelInfo(c.points);
+    const div = document.createElement('div');
+    div.className = 'parent-card';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:42px">${c.avatar}</span>
+        <div style="flex:1">
+          <div style="font-weight:900;font-size:17px">${c.name}</div>
+          <div style="font-size:13px;color:var(--muted)">${lvl.badge} ${lvl.name} · ${c.points} pts · ${c.stickers.length} stickers</div>
+          <div style="font-size:13px;color:var(--orange)">${c.streak ? '🔥 ' + c.streak + ' day streak' : 'No streak yet'}</div>
+        </div>
+        ${STATE.children.length > 1 ? `<button class="icon-btn" onclick="deleteChild('${c.id}')">🗑️</button>` : ''}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function selectNewChildAvatar(btn) {
+  document.querySelectorAll('#new-child-avatar-grid .avatar-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function addChild() {
+  const name = document.getElementById('new-child-name').value.trim();
+  if (!name) { showToast('Please enter a name!'); return; }
+  const avatar = document.querySelector('#new-child-avatar-grid .avatar-btn.selected')?.dataset.emoji || '🐶';
+  const id = uid();
+  STATE.children.push({ id, name, avatar, points: 0, level: 0, streak: 0, lastCompletionDate: '', stickers: [], completions: {} });
+  saveState();
+  document.getElementById('new-child-name').value = '';
+  renderChildren();
+  renderChildSwitcher();
+  renderAll();
+  showToast(`${avatar} ${name} added!`);
+}
+
+function deleteChild(id) {
+  if (STATE.children.length <= 1) { showToast('Must keep at least one child!'); return; }
+  if (!confirm('Remove this child? All their data will be deleted.')) return;
+  STATE.children = STATE.children.filter(c => c.id !== id);
+  STATE.tasks = STATE.tasks.filter(t => t.childId !== id);
+  STATE.rewardRequests = STATE.rewardRequests.filter(r => r.childId !== id);
+  if (STATE.activeChildId === id) STATE.activeChildId = STATE.children[0].id;
+  saveState();
+  renderAll();
+}
+
+function renderChildSwitcher() {
+  const sw = document.getElementById('child-switcher');
+  if (!sw) return;
+  sw.innerHTML = '';
+  STATE.children.forEach(c => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:12px;background:' + (c.id === STATE.activeChildId ? '#F3EEFF' : '#F9F9F9') + ';border:2px solid ' + (c.id === STATE.activeChildId ? 'var(--purple)' : 'transparent') + ';border-radius:14px;margin-bottom:8px;cursor:pointer;font-family:Nunito,sans-serif;font-size:16px;font-weight:700;color:var(--text)';
+    btn.innerHTML = `<span style="font-size:28px">${c.avatar}</span> ${c.name} ${c.id === STATE.activeChildId ? '(active)' : ''}`;
+    btn.onclick = () => switchChild(c.id);
+    sw.appendChild(btn);
+  });
+}
+
+function switchChild(id) {
+  STATE.activeChildId = id;
+  saveState();
+  renderAll();
+  lockParent();
+  switchTab('today');
+  showToast(`Switched to ${getActiveChild()?.name}!`);
+}
+
+// ========== SETTINGS ==========
+function renderSettings() {
+  setToggle('setting-sound', STATE.settings.sound);
+  setToggle('setting-calm', STATE.settings.calm);
+}
+
+function toggleSetting(key) {
+  STATE.settings[key] = !STATE.settings[key];
+  setToggle(`setting-${key}`, STATE.settings[key]);
+  saveState();
+}
+
+function toggleEl(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+}
+
+function setToggle(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val) el.classList.add('on'); else el.classList.remove('on');
+}
+
+function confirmReset() {
+  const child = getActiveChild();
+  if (!confirm(`Reset ALL progress for ${child?.name}? This cannot be undone!`)) return;
+  if (child) {
+    child.points = 0; child.level = 0; child.streak = 0;
+    child.lastCompletionDate = ''; child.stickers = []; child.completions = {};
+    STATE.rewardRequests = STATE.rewardRequests.filter(r => r.childId !== child.id);
+    saveState();
+    renderAll();
+    showToast(`${child.name}'s data reset.`);
+  }
+}
+
+// ========== NAVIGATION ==========
+function switchTab(tab) {
+  ['today','stickers','rewards','parents'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = 'none';
+    document.getElementById(`tabBtn-${t}`)?.classList.remove('active');
+  });
+  document.getElementById(`tab-${tab}`).style.display = 'flex';
+  document.getElementById(`tabBtn-${tab}`)?.classList.add('active');
+  currentTab = tab;
+
+  if (tab === 'parents' && !parentUnlocked) {
+    generateMathQuestion();
+  }
+}
+
+function switchParentTab(tab) {
+  document.querySelectorAll('.parent-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.parent-section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`p-${tab}`)?.classList.add('active');
+  currentParentTab = tab;
+}
+
+// ========== CONFETTI ==========
+const CONFETTI_COLORS = ['#FF6B9D','#845EC2','#FFD93D','#4D96FF','#6BCB77','#FF9671','#00C9A7'];
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>0.5?'50%':'2px'};animation:confettiFall ${1.5+Math.random()*2}s ${Math.random()*0.5}s linear forwards;transform:rotate(${Math.random()*360}deg)`;
+      container.appendChild(p);
+      setTimeout(() => p.remove(), 3500);
+    }, i * 20);
+  }
+}
+
+// ========== TOAST ==========
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  if (loadState()) {
+    // Existing data — go straight to app
+    showApp();
+  }
+  // else: setup screen already shown
+});
+
+// Fast-tap: fire clicks on touchend so there's zero 300ms delay
+document.addEventListener('touchstart', () => {}, { passive: true });
+
+</script>
+</body>
+</html>
+
+

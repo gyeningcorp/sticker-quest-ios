@@ -11,6 +11,8 @@ targets:
     platform: iOS
     sources:
       - path: Sources/StickerQuest
+      - path: Sources/StickerQuest/WebContent
+        type: folder
     info:
       path: Sources/StickerQuest/Info.plist
       properties:
@@ -39,23 +41,13 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
-          NSExceptionDomains:
-            gyeningcorp.github.io:
-              NSExceptionAllowsInsecureHTTPLoads: false
-              NSIncludesSubdomains: true
-            fonts.googleapis.com:
-              NSExceptionAllowsInsecureHTTPLoads: false
-              NSIncludesSubdomains: true
-            fonts.gstatic.com:
-              NSExceptionAllowsInsecureHTTPLoads: false
-              NSIncludesSubdomains: true
     entitlements:
       path: Sources/StickerQuest/StickerQuest.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gyeningcorp.stickerquest
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.1"
+        CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "5.9"
         IPHONEOS_DEPLOYMENT_TARGET: "15.0"
         TARGETED_DEVICE_FAMILY: "1,2"
