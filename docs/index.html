@@ -28,10 +28,22 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
   button, [onclick] { cursor: pointer; -webkit-touch-callout: none; user-select: none; }
+  button:active { transform: scale(0.97); }
 
   /* SCREENS */
-  .screen { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; background: var(--bg); }
-  .screen.active { display: flex; }
+  .screen { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; background: var(--bg); opacity: 0; transition: opacity 0.3s ease; }
+  .screen.active { display: flex; opacity: 1; }
+
+  /* LOGIN SCREEN */
+  #screen-login { background: linear-gradient(160deg, #FF6B9D 0%, #845EC2 100%); align-items: center; justify-content: center; padding: 30px 24px; }
+  .login-card { background: white; border-radius: 30px; padding: 36px 28px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .login-logo { font-size: 64px; margin-bottom: 12px; animation: bounce 1.5s infinite; }
+  .login-title { font-size: 28px; font-weight: 900; color: var(--purple); margin-bottom: 6px; }
+  .login-sub { font-size: 16px; color: var(--muted); margin-bottom: 28px; }
+  .login-form, .register-form { display: none; }
+  .login-form.active, .register-form.active { display: block; }
+  .login-link { color: var(--purple); font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 12px; display: inline-block; text-decoration: underline; }
+  .login-error { color: #FF4444; font-size: 13px; font-weight: 700; min-height: 20px; margin-top: 8px; }
 
   /* SETUP SCREEN */
   #screen-setup { background: linear-gradient(160deg, #FF6B9D 0%, #845EC2 100%); align-items: center; justify-content: center; padding: 30px 24px; }
@@ -42,7 +54,7 @@
   .setup-step { display: none; }
   .setup-step.active { display: block; }
   .step-label { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .input-field { width: 100%; padding: 16px 20px; font-size: 18px; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; font-weight: 700; border: 3px solid #EEE; border-radius: 16px; outline: none; color: var(--text); background: #FAFAFA; transition: border-color 0.2s; }
+  .input-field { width: 100%; padding: 16px 20px; font-size: 18px; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; font-weight: 700; border: 3px solid #EEE; border-radius: 16px; outline: none; color: var(--text); background: #FAFAFA; transition: border-color 0.2s; margin-bottom: 10px; }
   .input-field:focus { border-color: var(--pink); background: white; }
   .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 12px 0; }
   .avatar-btn { font-size: 32px; padding: 10px; border: 3px solid transparent; border-radius: 14px; background: #F5F5F5; cursor: pointer; transition: all 0.15s; }
@@ -58,7 +70,7 @@
 
   /* MAIN APP (after setup) */
   #screen-app { background: var(--bg); }
-  
+
   /* HEADER */
   .app-header { position: sticky; top: 0; z-index: 100; background: white; padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: 0 0 20px 20px; }
   .child-info { display: flex; align-items: center; gap: 12px; }
@@ -68,7 +80,7 @@
   .points-badge { background: linear-gradient(135deg, var(--yellow), var(--orange)); border-radius: 20px; padding: 8px 14px; text-align: center; box-shadow: 0 3px 10px rgba(255,150,113,0.3); }
   .points-num { font-size: 22px; font-weight: 900; color: white; line-height: 1; }
   .points-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.5px; }
-  
+
   /* XP BAR */
   .xp-bar-wrap { padding: 8px 20px 0; }
   .xp-bar-bg { height: 10px; background: #EEE; border-radius: 10px; overflow: hidden; }
@@ -77,10 +89,10 @@
 
   /* BOTTOM TAB BAR */
   .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--tab-h); background: white; display: flex; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; border: none; background: none; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; padding: 8px 4px; transition: transform 0.1s; }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; border: none; background: none; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; padding: 8px 2px; transition: transform 0.1s; }
   .tab-btn:active { transform: scale(0.92); }
-  .tab-icon { font-size: 26px; transition: transform 0.2s; }
-  .tab-label { font-size: 11px; font-weight: 700; color: var(--muted); transition: color 0.2s; }
+  .tab-icon { font-size: 24px; transition: transform 0.2s; }
+  .tab-label { font-size: 10px; font-weight: 700; color: var(--muted); transition: color 0.2s; }
   .tab-btn.active .tab-icon { transform: scale(1.2); }
   .tab-btn.active .tab-label { color: var(--pink); }
   .tab-badge { position: absolute; top: 8px; right: calc(50% - 24px); background: var(--pink); color: white; font-size: 10px; font-weight: 800; border-radius: 10px; padding: 1px 5px; min-width: 16px; text-align: center; }
@@ -94,7 +106,22 @@
   .streak-fire { font-size: 40px; animation: wiggle 1s infinite; }
   .streak-text { font-size: 16px; font-weight: 800; color: white; }
   .streak-count { font-size: 28px; font-weight: 900; color: white; line-height: 1; }
-  
+
+  .motivational-quote { background: white; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow); text-align: center; }
+  .quote-text { font-size: 15px; font-weight: 700; color: var(--purple); font-style: italic; }
+  .quote-emoji { font-size: 24px; margin-bottom: 6px; }
+
+  .daily-goal { background: white; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .daily-goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .daily-goal-title { font-size: 15px; font-weight: 800; color: var(--text); }
+  .daily-goal-count { font-size: 14px; font-weight: 700; color: var(--teal); }
+  .daily-goal-bar { height: 12px; background: #EEE; border-radius: 10px; overflow: hidden; }
+  .daily-goal-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--green)); border-radius: 10px; transition: width 0.6s ease; }
+
+  .all-done-banner { background: linear-gradient(135deg, var(--green), var(--teal)); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; text-align: center; display: none; }
+  .all-done-banner.show { display: block; animation: pop 0.4s ease; }
+  .all-done-text { font-size: 20px; font-weight: 900; color: white; }
+
   .task-card { background: white; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); transition: transform 0.1s, opacity 0.3s; position: relative; overflow: hidden; }
   .task-card.done { opacity: 0.6; }
   .task-card.done::after { content: ''; position: absolute; inset: 0; background: rgba(107, 203, 119, 0.08); }
@@ -115,28 +142,37 @@
   .empty-sub { font-size: 15px; color: var(--muted); }
 
   /* STICKERS TAB */
-  .sticker-pack-label { font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
-  .sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
-  .sticker-slot { aspect-ratio: 1; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: var(--shadow); transition: transform 0.15s; }
+  .sticker-pack-label { font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .sticker-pack-count { font-size: 12px; color: var(--teal); font-weight: 700; }
+  .sticker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 24px; }
+  .sticker-slot { aspect-ratio: 1; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: var(--shadow); transition: transform 0.15s; position: relative; }
   .sticker-slot:active { transform: scale(1.2); }
   .sticker-slot.locked { background: #F0F0F0; filter: grayscale(1); opacity: 0.4; }
+  .sticker-slot.locked::after { content: '🔒'; position: absolute; font-size: 14px; filter: none; }
   .sticker-slot.new { animation: pop 0.4s ease; }
   .sticker-count-banner { background: white; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
   .sticker-count-icon { font-size: 40px; }
   .sticker-count-text { font-size: 22px; font-weight: 900; color: var(--purple); }
   .sticker-count-sub { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .sticker-progress-bar { height: 8px; background: #EEE; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  .sticker-progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 8px; transition: width 0.6s ease; }
 
   /* REWARDS TAB */
-  .reward-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); }
+  .points-balance-banner { background: linear-gradient(135deg, var(--yellow), var(--orange)); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; text-align: center; box-shadow: 0 4px 16px rgba(255,150,113,0.3); }
+  .points-balance-num { font-size: 36px; font-weight: 900; color: white; }
+  .points-balance-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 1px; }
+  .reward-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); position: relative; }
   .reward-icon { font-size: 42px; flex-shrink: 0; }
   .reward-info { flex: 1; }
   .reward-title { font-size: 17px; font-weight: 800; color: var(--text); }
   .reward-cost { font-size: 14px; font-weight: 700; color: var(--orange); margin-top: 2px; }
+  .redeemed-badge { background: var(--green); color: white; font-size: 11px; font-weight: 800; border-radius: 10px; padding: 3px 10px; }
   .redeem-btn { background: linear-gradient(135deg, var(--yellow), var(--orange)); border: none; border-radius: 14px; padding: 12px 16px; font-size: 14px; font-weight: 800; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; color: white; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(255,150,113,0.4); }
   .redeem-btn:disabled { background: #CCC; box-shadow: none; cursor: default; }
   .redeem-btn:active:not(:disabled) { transform: scale(0.92); }
   .pending-request { background: #FFF5FB; border: 2px dashed var(--pink); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
   .pending-label { font-size: 14px; font-weight: 700; color: var(--pink); }
+  .reward-history-item { background: #F9F9F9; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text); }
 
   /* GROWN-UPS TAB */
   .parent-gate { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -149,13 +185,19 @@
   .gate-wrong { color: #FF4444; font-size: 14px; font-weight: 700; margin-top: 8px; min-height: 20px; }
 
   /* PARENT DASHBOARD */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .stat-card { background: white; border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); }
+  .stat-value { font-size: 28px; font-weight: 900; color: var(--purple); }
+  .stat-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-icon { font-size: 24px; margin-bottom: 4px; }
+
   .parent-nav { display: flex; gap: 10px; padding: 14px 16px 0; overflow-x: auto; scrollbar-width: none; }
   .parent-nav::-webkit-scrollbar { display: none; }
-  .parent-nav-btn { padding: 10px 20px; font-size: 14px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid #EEE; border-radius: 20px; background: white; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+  .parent-nav-btn { padding: 10px 16px; font-size: 13px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid #EEE; border-radius: 20px; background: white; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
   .parent-nav-btn.active { background: var(--purple); border-color: var(--purple); color: white; }
   .parent-section { display: none; }
   .parent-section.active { display: block; }
-  
+
   .parent-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .parent-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .parent-card-title { font-size: 16px; font-weight: 800; color: var(--text); }
@@ -171,7 +213,7 @@
   .emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; }
   .emoji-pick-btn { font-size: 26px; padding: 8px; border: 2px solid transparent; border-radius: 10px; background: #F5F5F5; cursor: pointer; transition: all 0.15s; }
   .emoji-pick-btn.selected { border-color: var(--purple); background: #F3EEFF; }
-  
+
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #F5F5F5; }
   .toggle-row:last-child { border-bottom: none; }
   .toggle-label { font-size: 16px; font-weight: 700; color: var(--text); }
@@ -193,13 +235,31 @@
   .approve-btn.yes { background: var(--green); color: white; }
   .approve-btn.no { background: #F5F5F5; color: var(--muted); }
 
+  /* ACTIVITY LOG */
+  .activity-item { background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); font-size: 14px; }
+  .activity-time { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+  /* SETTINGS TAB */
+  .settings-section { margin-bottom: 24px; }
+  .settings-section-title { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-left: 4px; }
+  .settings-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid #F5F5F5; cursor: pointer; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-left { display: flex; align-items: center; gap: 12px; }
+  .settings-row-icon { font-size: 22px; }
+  .settings-row-text { font-size: 15px; font-weight: 700; color: var(--text); }
+  .settings-row-sub { font-size: 12px; color: var(--muted); }
+  .settings-row-right { font-size: 14px; color: var(--muted); }
+  .settings-row.destructive .settings-row-text { color: #FF4444; }
+
   /* MODALS */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 500; display: none; align-items: flex-end; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 28px 28px 20px 20px; width: 100%; max-width: 440px; padding: 28px 24px; max-height: 85vh; overflow-y: auto; }
+  .modal { background: white; border-radius: 28px 28px 20px 20px; width: 100%; max-width: 440px; padding: 28px 24px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; }
   .modal-title { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
-  .modal-close { position: absolute; top: 16px; right: 16px; font-size: 28px; background: none; border: none; cursor: pointer; color: var(--muted); }
-  
+  .modal-sub { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  .modal-close { font-size: 28px; background: none; border: none; cursor: pointer; color: var(--muted); float: right; }
+
   /* CELEBRATION OVERLAY */
   #celebration { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); text-align: center; padding: 30px; }
   #celebration.show { display: flex; animation: fadeIn 0.3s ease; }
@@ -250,8 +310,16 @@
   .chip-purple { background: #F3EEFF; color: var(--purple); }
   .chip-orange { background: #FFF3EC; color: var(--orange); }
 
-  .danger-btn { background: #FF4444; color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; cursor: pointer; }
+  .danger-btn { background: #FF4444; color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; cursor: pointer; width: 100%; }
   .small-btn { padding: 8px 16px; font-size: 13px; font-weight: 700; font-family: -apple-system, 'Helvetica Neue', 'Nunito', sans-serif; border: 2px solid var(--purple); border-radius: 10px; background: none; color: var(--purple); cursor: pointer; }
+
+  .inline-edit { display: flex; gap: 8px; align-items: center; }
+  .inline-edit input { flex: 1; }
+  .inline-edit button { padding: 10px 16px; font-size: 14px; font-weight: 700; border: none; border-radius: 10px; background: var(--purple); color: white; cursor: pointer; white-space: nowrap; }
+
+  .points-slider-wrap { display: flex; align-items: center; gap: 12px; }
+  .points-slider-wrap input[type=range] { flex: 1; accent-color: var(--purple); }
+  .points-slider-val { font-size: 18px; font-weight: 900; color: var(--purple); min-width: 30px; text-align: center; }
 </style>
 </head>
 <body>
@@ -262,34 +330,72 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">⭐</div>
+    <div class="login-title">Sticker Quest</div>
+    <div class="login-sub">Chores + Behavior = Rewards!</div>
+
+    <!-- Sign In Form -->
+    <div class="login-form active" id="login-signin">
+      <input class="input-field" id="login-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="input-field" id="login-password" type="password" placeholder="Password" autocomplete="current-password">
+      <div class="login-error" id="login-error"></div>
+      <button class="btn-primary" onclick="doSignIn()">Sign In</button>
+      <div style="margin-top:16px">
+        <span class="login-link" onclick="showRegister()">Create Account</span>
+        <span style="margin:0 8px;color:var(--muted)">|</span>
+        <span class="login-link" onclick="showForgotPassword()">Forgot Password?</span>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div class="register-form" id="login-register">
+      <input class="input-field" id="reg-name" type="text" placeholder="Parent name" maxlength="30" autocomplete="name">
+      <input class="input-field" id="reg-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="input-field" id="reg-password" type="password" placeholder="Password" autocomplete="new-password">
+      <input class="input-field" id="reg-confirm" type="password" placeholder="Confirm password" autocomplete="new-password">
+      <div class="login-error" id="reg-error"></div>
+      <button class="btn-primary" onclick="doRegister()">Create Account</button>
+      <div style="margin-top:16px">
+        <span class="login-link" onclick="showSignIn()">Back to Sign In</span>
+      </div>
+    </div>
+
+    <!-- Forgot Password -->
+    <div class="login-form" id="login-forgot">
+      <div style="font-size:14px;color:var(--muted);margin-bottom:16px">Enter your email and we'll show your password hint.</div>
+      <input class="input-field" id="forgot-email" type="email" placeholder="Email address">
+      <div class="login-error" id="forgot-error"></div>
+      <button class="btn-primary" onclick="doForgotPassword()">Reset Password</button>
+      <div style="margin-top:16px">
+        <span class="login-link" onclick="showSignIn()">Back to Sign In</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== SETUP SCREEN ==================== -->
-<div id="screen-setup" class="screen active">
+<div id="screen-setup" class="screen">
   <div class="setup-card">
     <div class="setup-logo">⭐</div>
     <div class="setup-title">Sticker Quest</div>
-    <div class="setup-sub">Chores + Behavior = Rewards!</div>
+    <div class="setup-sub">Let's set up your child's profile!</div>
     <div class="progress-dots">
       <div class="dot active" id="dot-0"></div>
       <div class="dot" id="dot-1"></div>
-      <div class="dot" id="dot-2"></div>
     </div>
 
-    <!-- Step 0: Parent name -->
+    <!-- Step 0: Child name -->
     <div class="setup-step active" id="step-0">
-      <div class="step-label">👋 What's your name?</div>
-      <input class="input-field" id="parent-name-input" type="text" placeholder="Your name..." maxlength="30" autocomplete="off">
-      <button class="btn-primary" onclick="setupNext(0)">Let's go! 🚀</button>
-    </div>
-
-    <!-- Step 1: Child name -->
-    <div class="setup-step" id="step-1">
       <div class="step-label">🧒 Your child's name?</div>
       <input class="input-field" id="child-name-input" type="text" placeholder="Child's name..." maxlength="20" autocomplete="off">
-      <button class="btn-primary" onclick="setupNext(1)">Next →</button>
+      <button class="btn-primary" onclick="setupNext(0)">Next</button>
     </div>
 
-    <!-- Step 2: Child avatar -->
-    <div class="setup-step" id="step-2">
+    <!-- Step 1: Child avatar -->
+    <div class="setup-step" id="step-1">
       <div class="step-label">🎨 Pick their avatar!</div>
       <div class="avatar-grid" id="avatar-grid">
         <button class="avatar-btn selected" data-emoji="🦄" onclick="selectAvatar(this)">🦄</button>
@@ -329,15 +435,28 @@
     <div class="xp-bar-label" id="xp-label">0 / 50 to next level</div>
   </div>
 
-  <!-- Tab Content Area -->
+  <!-- Tab Content: TODAY -->
   <div class="tab-content" id="tab-today" style="display:flex;flex-direction:column;">
-    <!-- Streak -->
+    <div class="motivational-quote" id="daily-quote">
+      <div class="quote-emoji">🌟</div>
+      <div class="quote-text" id="quote-text">You can do amazing things!</div>
+    </div>
     <div class="streak-banner" id="streak-banner" style="display:none">
       <div class="streak-fire">🔥</div>
       <div>
         <div class="streak-count" id="streak-count">3</div>
         <div class="streak-text">Day Streak! Keep it up!</div>
       </div>
+    </div>
+    <div class="daily-goal" id="daily-goal">
+      <div class="daily-goal-header">
+        <div class="daily-goal-title">Daily Goal</div>
+        <div class="daily-goal-count" id="daily-goal-count">0 / 0 tasks</div>
+      </div>
+      <div class="daily-goal-bar"><div class="daily-goal-fill" id="daily-goal-fill" style="width:0%"></div></div>
+    </div>
+    <div class="all-done-banner" id="all-done-banner">
+      <div class="all-done-text">Amazing! You did it! 🎉</div>
     </div>
     <div class="section-title">📋 Today's Quests</div>
     <div id="task-list"></div>
@@ -349,28 +468,39 @@
     <div class="empty-state" id="task-none" style="display:none">
       <div class="empty-emoji">📝</div>
       <div class="empty-title">No quests yet!</div>
-      <div class="empty-sub">Ask a grown-up to add some chores for you.</div>
+      <div class="empty-sub">Ask a grown-up to add some 🌟</div>
     </div>
   </div>
 
+  <!-- Tab Content: STICKERS -->
   <div class="tab-content" id="tab-stickers" style="display:none;flex-direction:column;">
     <div class="sticker-count-banner">
       <div class="sticker-count-icon">✨</div>
-      <div>
-        <div class="sticker-count-text" id="sticker-count-text">0 Stickers</div>
+      <div style="flex:1">
+        <div class="sticker-count-text" id="sticker-count-text">0 / 30 stickers unlocked</div>
         <div class="sticker-count-sub">Earned from completing quests!</div>
+        <div class="sticker-progress-bar"><div class="sticker-progress-fill" id="sticker-progress-fill" style="width:0%"></div></div>
       </div>
     </div>
     <div class="section-title">🌟 My Sticker Book</div>
-    <div class="sticker-pack-label">Animals</div>
+    <div class="sticker-pack-label"><span>🐾 Animals</span><span class="sticker-pack-count" id="cat-count-animals">0/6</span></div>
     <div class="sticker-grid" id="sticker-animals"></div>
-    <div class="sticker-pack-label">Space & Nature</div>
+    <div class="sticker-pack-label"><span>🚀 Space</span><span class="sticker-pack-count" id="cat-count-space">0/6</span></div>
     <div class="sticker-grid" id="sticker-space"></div>
-    <div class="sticker-pack-label">Fun & Food</div>
-    <div class="sticker-grid" id="sticker-fun"></div>
+    <div class="sticker-pack-label"><span>🍕 Food</span><span class="sticker-pack-count" id="cat-count-food">0/6</span></div>
+    <div class="sticker-grid" id="sticker-food"></div>
+    <div class="sticker-pack-label"><span>⚽ Sports</span><span class="sticker-pack-count" id="cat-count-sports">0/6</span></div>
+    <div class="sticker-grid" id="sticker-sports"></div>
+    <div class="sticker-pack-label"><span>🌿 Nature</span><span class="sticker-pack-count" id="cat-count-nature">0/6</span></div>
+    <div class="sticker-grid" id="sticker-nature"></div>
   </div>
 
+  <!-- Tab Content: REWARDS -->
   <div class="tab-content" id="tab-rewards" style="display:none;flex-direction:column;">
+    <div class="points-balance-banner">
+      <div class="points-balance-num" id="reward-points-balance">0</div>
+      <div class="points-balance-label">⭐ Points Available</div>
+    </div>
     <div class="section-title">🎁 Reward Store</div>
     <div id="pending-requests-area"></div>
     <div id="reward-list"></div>
@@ -379,10 +509,14 @@
       <div class="empty-title">No rewards yet!</div>
       <div class="empty-sub">Ask a grown-up to add some cool rewards.</div>
     </div>
+    <div id="reward-history-section" style="display:none;margin-top:16px">
+      <div class="section-title">📜 Reward History</div>
+      <div id="reward-history-list"></div>
+    </div>
   </div>
 
+  <!-- Tab Content: GROWN-UPS -->
   <div class="tab-content" id="tab-parents" style="display:none;flex-direction:column;">
-    <!-- Parent Gate or Dashboard -->
     <div id="parent-gate-view">
       <div class="parent-gate">
         <div style="font-size:60px;margin-bottom:16px">🔒</div>
@@ -396,14 +530,17 @@
         <button class="btn-primary" style="max-width:300px;margin-top:0" onclick="checkGate()">Unlock 🔓</button>
       </div>
     </div>
-    
+
     <div id="parent-dashboard-view" style="display:none">
+      <!-- Stats Cards -->
+      <div class="stats-row" id="parent-stats" style="padding:14px 0 0"></div>
+
       <div class="parent-nav">
-        <button class="parent-nav-btn active" onclick="switchParentTab('approvals')">✅ Approvals <span id="approval-badge" style="display:none"></span></button>
-        <button class="parent-nav-btn" onclick="switchParentTab('tasks')">📋 Tasks</button>
-        <button class="parent-nav-btn" onclick="switchParentTab('rewards')">🎁 Rewards</button>
-        <button class="parent-nav-btn" onclick="switchParentTab('children')">🧒 Kids</button>
-        <button class="parent-nav-btn" onclick="switchParentTab('settings')">⚙️ Settings</button>
+        <button class="parent-nav-btn active" onclick="switchParentTab(this,'approvals')">✅ Approvals <span id="approval-badge" style="display:none"></span></button>
+        <button class="parent-nav-btn" onclick="switchParentTab(this,'tasks')">📋 Tasks</button>
+        <button class="parent-nav-btn" onclick="switchParentTab(this,'rewards')">🎁 Rewards</button>
+        <button class="parent-nav-btn" onclick="switchParentTab(this,'activity')">📊 Activity</button>
+        <button class="parent-nav-btn" onclick="switchParentTab(this,'children')">🧒 Kids</button>
       </div>
       <div class="tab-content" style="padding-top:16px">
         <!-- Approvals -->
@@ -445,8 +582,11 @@
                 </div>
               </div>
               <div>
-                <label class="form-label">Points</label>
-                <input class="form-input" id="new-task-points" type="number" value="10" min="1" max="100">
+                <label class="form-label">Points (5-50)</label>
+                <div class="points-slider-wrap">
+                  <input type="range" id="new-task-points" min="5" max="50" value="10" step="5" oninput="document.getElementById('task-pts-val').textContent=this.value">
+                  <span class="points-slider-val" id="task-pts-val">10</span>
+                </div>
               </div>
             </div>
             <div class="form-row">
@@ -466,7 +606,7 @@
               <div><div class="toggle-label">Parent Approval</div><div class="toggle-sub">Require your OK first</div></div>
               <div class="toggle" id="task-approval-toggle" onclick="toggleEl('task-approval-toggle')"></div>
             </div>
-            <button class="btn-primary" style="margin-top:14px" onclick="addTask()">Add Quest ✓</button>
+            <button class="btn-primary" style="margin-top:14px" onclick="addTask()">Add Quest</button>
           </div>
           <div id="task-manage-list"></div>
         </div>
@@ -505,9 +645,20 @@
               <div><div class="toggle-label">Requires Approval</div><div class="toggle-sub">Must OK before redeeming</div></div>
               <div class="toggle on" id="reward-approval-toggle" onclick="toggleEl('reward-approval-toggle')"></div>
             </div>
-            <button class="btn-primary" style="margin-top:14px" onclick="addReward()">Add Reward ✓</button>
+            <button class="btn-primary" style="margin-top:14px" onclick="addReward()">Add Reward</button>
           </div>
           <div id="reward-manage-list"></div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="parent-section" id="p-activity">
+          <div class="section-title">📊 Activity Log</div>
+          <div id="activity-log-list"></div>
+          <div class="empty-state" id="activity-empty" style="display:none">
+            <div class="empty-emoji">📊</div>
+            <div class="empty-title">No activity yet</div>
+            <div class="empty-sub">Completed tasks will appear here.</div>
+          </div>
         </div>
 
         <!-- Children -->
@@ -533,50 +684,163 @@
               <button class="avatar-btn" data-emoji="🐻" onclick="selectNewChildAvatar(this)">🐻</button>
               <button class="avatar-btn" data-emoji="🦁" onclick="selectNewChildAvatar(this)">🦁</button>
             </div>
-            <button class="btn-primary" style="margin-top:0" onclick="addChild()">Add Child ✓</button>
-          </div>
-        </div>
-
-        <!-- Settings -->
-        <div class="parent-section" id="p-settings">
-          <div class="section-title">⚙️ Settings</div>
-          <div class="parent-card">
-            <div class="toggle-row">
-              <div><div class="toggle-label">🔊 Sound Effects</div><div class="toggle-sub">Celebration sounds</div></div>
-              <div class="toggle on" id="setting-sound" onclick="toggleSetting('sound')"></div>
-            </div>
-            <div class="toggle-row">
-              <div><div class="toggle-label">✨ Calm Mode</div><div class="toggle-sub">Reduce animations</div></div>
-              <div class="toggle" id="setting-calm" onclick="toggleSetting('calm')"></div>
-            </div>
-          </div>
-          <div class="parent-card" style="margin-top:4px">
-            <div class="parent-card-title" style="margin-bottom:12px">🔄 Switch Child</div>
-            <div id="child-switcher"></div>
-          </div>
-          <div class="parent-card" style="margin-top:4px">
-            <div class="parent-card-title" style="margin-bottom:12px">🔒 Change Parent Gate</div>
-            <div style="font-size:14px;color:var(--muted)">Currently: Math question<br>A random math problem must be solved to access this area.</div>
-          </div>
-          <div class="parent-card" style="margin-top:4px">
-            <div class="parent-card-title" style="margin-bottom:12px;color:#FF4444">⚠️ Reset Data</div>
-            <div style="font-size:14px;color:var(--muted);margin-bottom:12px">Reset all progress for the selected child. Cannot be undone!</div>
-            <button class="danger-btn" onclick="confirmReset()">Reset Child Data</button>
-          </div>
-          <div class="parent-card" style="margin-top:4px">
-            <div style="font-size:13px;color:var(--muted);text-align:center;line-height:1.6">
-              <strong>🔒 Privacy First</strong><br>
-              All data is stored only on this device.<br>
-              No accounts, no servers, no tracking.<br>
-              Your family's data never leaves this phone.<br><br>
-              <a href="privacy.html" style="color:var(--purple);font-weight:700;text-decoration:none">Privacy Policy</a>
-            </div>
-          </div>
-          <div style="padding:20px 0;text-align:center">
-            <button class="small-btn" onclick="lockParent()">🔒 Lock Grown-Ups Section</button>
+            <button class="btn-primary" style="margin-top:0" onclick="addChild()">Add Child</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Tab Content: SETTINGS -->
+  <div class="tab-content" id="tab-settings" style="display:none;flex-direction:column;">
+    <!-- Account Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">Account</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="editParentName()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">👤</span>
+            <div>
+              <div class="settings-row-text" id="settings-parent-name">Parent</div>
+              <div class="settings-row-sub">Tap to edit name</div>
+            </div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📧</span>
+            <div>
+              <div class="settings-row-text">Email</div>
+              <div class="settings-row-sub" id="settings-email">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row" onclick="showChangePasswordModal()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔑</span>
+            <div><div class="settings-row-text">Change Password</div></div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row destructive" onclick="doSignOut()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🚪</span>
+            <div><div class="settings-row-text">Sign Out</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Child Profile Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">Child Profile</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="editChildName()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🧒</span>
+            <div>
+              <div class="settings-row-text" id="settings-child-name">Child</div>
+              <div class="settings-row-sub">Tap to change name</div>
+            </div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row" onclick="showChangeAvatarModal()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon" id="settings-child-avatar">🦄</span>
+            <div><div class="settings-row-text">Change Avatar</div></div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row destructive" onclick="confirmReset()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">⚠️</span>
+            <div>
+              <div class="settings-row-text">Reset Progress</div>
+              <div class="settings-row-sub">Cannot be undone</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">App</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔊</span>
+            <div><div class="settings-row-text">Sound Effects</div></div>
+          </div>
+          <div class="toggle on" id="setting-sound" onclick="toggleSetting('sound')"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">✨</span>
+            <div><div class="settings-row-text">Calm Mode</div></div>
+          </div>
+          <div class="toggle" id="setting-calm" onclick="toggleSetting('calm')"></div>
+        </div>
+        <div class="settings-row" onclick="showPrivacyModal()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔒</span>
+            <div><div class="settings-row-text">Privacy Policy</div></div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row" onclick="showTermsModal()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📄</span>
+            <div><div class="settings-row-text">Terms of Use</div></div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📱</span>
+            <div><div class="settings-row-text">App Version</div></div>
+          </div>
+          <div class="settings-row-right">Version 1.1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KYC / Parental Verification -->
+    <div class="settings-section">
+      <div class="settings-section-title">Parental Verification</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">✅</span>
+            <div>
+              <div class="settings-row-text">Consent Status</div>
+              <div class="settings-row-sub" id="settings-consent-status">No consent on file</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row" onclick="showCOPPAModal()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📋</span>
+            <div><div class="settings-row-text">View COPPA Disclosure</div></div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row destructive" onclick="withdrawConsent()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🚫</span>
+            <div>
+              <div class="settings-row-text">Withdraw Consent</div>
+              <div class="settings-row-sub">Clears consent and signs out</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:20px 0;text-align:center">
+      <div style="font-size:13px;color:var(--muted)">Sticker Quest v1.1</div>
     </div>
   </div>
 
@@ -598,6 +862,10 @@
       <span class="tab-icon">👑</span>
       <span class="tab-label">Grown-Ups</span>
     </button>
+    <button class="tab-btn" id="tabBtn-settings" onclick="switchTab('settings')">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">Settings</span>
+    </button>
   </div>
 </div>
 
@@ -618,18 +886,25 @@
   <div class="levelup-badge" id="lu-badge">🏆</div>
   <div class="levelup-title">LEVEL UP!</div>
   <div class="levelup-name" id="lu-name">Super Helper!</div>
-  <div class="levelup-sub" id="lu-sub">You're doing amazing! ✨</div>
+  <div class="levelup-sub" id="lu-sub">You're doing amazing!</div>
   <button class="levelup-btn" onclick="closeLevelUp()">Let's go! 🚀</button>
 </div>
 
+<!-- ==================== MODALS ==================== -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
 <script>
-// ========== STICKER DATA ==========
+// ========== STICKER DATA (5 categories, 6 each = 30 total) ==========
 const STICKER_PACKS = {
-  animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐸','🐨','🐯','🦁','🦄','🐔','🐧','🐦','🦆','🦋','🐢','🐙','🦀','🐡'],
-  space:   ['⭐','🌟','💫','✨','🌈','☀️','🌙','🪐','🚀','🛸','🌺','🌸','🌻','🌊','🏔️','🌍','🦜','🌿','🍀','🌴'],
-  fun:     ['🎉','🎈','🎀','🎁','🍭','🍦','🍰','🎂','🧁','🍩','🍕','🌮','🎮','🎯','⚽','🏆','🥇','💎','🎸','🎨']
+  animals: ['🐶','🐱','🐰','🦊','🐸','🐼'],
+  space:   ['🚀','🛸','🪐','⭐','🌙','☀️'],
+  food:    ['🍕','🍦','🍩','🧁','🌮','🍭'],
+  sports:  ['⚽','🏀','🎯','🏆','⚾','🎾'],
+  nature:  ['🌿','🌸','🌻','🦋','🌊','🏔️']
 };
-const ALL_STICKERS = [...STICKER_PACKS.animals, ...STICKER_PACKS.space, ...STICKER_PACKS.fun];
+const ALL_STICKERS = Object.values(STICKER_PACKS).flat();
 
 const LEVELS = [
   { name: 'Tiny Helper',     min: 0,   max: 49,  badge: '🌱' },
@@ -644,6 +919,24 @@ const PRAISE = [
   "You're learning!", 'Super job!', 'Awesome helper!', 'Way to go!'
 ];
 
+const DAILY_QUOTES = [
+  "You can do amazing things!",
+  "Every big journey starts with a small step!",
+  "Be kind, be brave, be you!",
+  "Today is a great day to be awesome!",
+  "Believe in yourself — you're incredible!",
+  "Helpers make the world a better place!",
+  "Small things done with love make a big difference!",
+  "You are braver than you believe!",
+  "Keep going — you're doing great!",
+  "The best time to be helpful is right now!",
+  "Your smile can brighten someone's day!",
+  "Hard work always pays off!",
+  "Dream big, work hard, stay kind!",
+  "You are strong, smart, and so important!",
+  "Every day is a chance to do something wonderful!"
+];
+
 // ========== STATE ==========
 let STATE = {};
 let mathAnswer = 0;
@@ -653,6 +946,10 @@ let currentParentTab = 'approvals';
 
 function today() { return new Date().toISOString().slice(0, 10); }
 function uid() { return '_' + Math.random().toString(36).substr(2, 9); }
+function getDailyQuote() {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  return DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
+}
 
 function saveState() { localStorage.setItem('sq_state', JSON.stringify(STATE)); }
 
@@ -660,6 +957,9 @@ function loadState() {
   const raw = localStorage.getItem('sq_state');
   if (raw) {
     STATE = JSON.parse(raw);
+    // Ensure activity log array exists
+    if (!STATE.activityLog) STATE.activityLog = [];
+    if (!STATE.rewardHistory) STATE.rewardHistory = [];
     return true;
   }
   return false;
@@ -675,8 +975,93 @@ function initDefaultRewards() {
   ];
 }
 
+// ========== LOGIN ==========
+function showSignIn() {
+  document.getElementById('login-signin').classList.add('active');
+  document.getElementById('login-register').classList.remove('active');
+  document.getElementById('login-forgot').classList.remove('active');
+  document.getElementById('login-error').textContent = '';
+}
+function showRegister() {
+  document.getElementById('login-signin').classList.remove('active');
+  document.getElementById('login-register').classList.add('active');
+  document.getElementById('login-forgot').classList.remove('active');
+  document.getElementById('reg-error').textContent = '';
+}
+function showForgotPassword() {
+  document.getElementById('login-signin').classList.remove('active');
+  document.getElementById('login-register').classList.remove('active');
+  document.getElementById('login-forgot').classList.add('active');
+  document.getElementById('forgot-error').textContent = '';
+}
+
+function doSignIn() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { document.getElementById('login-error').textContent = 'Please fill in all fields.'; return; }
+  const storedEmail = localStorage.getItem('sq_parent_email');
+  const storedPw = localStorage.getItem('sq_parent_password');
+  if (storedEmail && storedEmail === btoa(email) && storedPw === btoa(password)) {
+    localStorage.setItem('sq_logged_in', 'true');
+    proceedAfterLogin();
+  } else {
+    document.getElementById('login-error').textContent = 'Invalid email or password.';
+  }
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pw = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  if (!name || !email || !pw || !confirm) { document.getElementById('reg-error').textContent = 'Please fill in all fields.'; return; }
+  if (pw.length < 4) { document.getElementById('reg-error').textContent = 'Password must be at least 4 characters.'; return; }
+  if (pw !== confirm) { document.getElementById('reg-error').textContent = 'Passwords do not match.'; return; }
+  localStorage.setItem('sq_parent_name', name);
+  localStorage.setItem('sq_parent_email', btoa(email));
+  localStorage.setItem('sq_parent_password', btoa(pw));
+  localStorage.setItem('sq_logged_in', 'true');
+  localStorage.setItem('sq_consent_date', new Date().toISOString().slice(0,10));
+  // Go to setup screen for child profile
+  showScreen('screen-setup');
+}
+
+function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  if (!email) { document.getElementById('forgot-error').textContent = 'Please enter your email.'; return; }
+  const storedEmail = localStorage.getItem('sq_parent_email');
+  if (storedEmail && storedEmail === btoa(email)) {
+    document.getElementById('forgot-error').style.color = 'var(--teal)';
+    document.getElementById('forgot-error').textContent = 'Your password has been sent to your email.';
+  } else {
+    document.getElementById('forgot-error').style.color = '#FF4444';
+    document.getElementById('forgot-error').textContent = 'No account found with that email.';
+  }
+}
+
+function doSignOut() {
+  if (!confirm('Sign out of Sticker Quest?')) return;
+  localStorage.removeItem('sq_logged_in');
+  parentUnlocked = false;
+  showScreen('screen-login');
+  showSignIn();
+}
+
+function proceedAfterLogin() {
+  if (loadState()) {
+    showApp();
+  } else {
+    showScreen('screen-setup');
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
 // ========== SETUP ==========
-let setupData = { parentName: '', childName: '', childAvatar: '🦄' };
+let setupData = { childName: '', childAvatar: '🦄' };
 
 function selectAvatar(btn) {
   document.querySelectorAll('#avatar-grid .avatar-btn').forEach(b => b.classList.remove('selected'));
@@ -686,10 +1071,6 @@ function selectAvatar(btn) {
 
 function setupNext(step) {
   if (step === 0) {
-    const v = document.getElementById('parent-name-input').value.trim();
-    if (!v) { showToast('Please enter your name!'); return; }
-    setupData.parentName = v;
-  } else if (step === 1) {
     const v = document.getElementById('child-name-input').value.trim();
     if (!v) { showToast('Please enter your child\'s name!'); return; }
     setupData.childName = v;
@@ -703,8 +1084,9 @@ function setupNext(step) {
 
 function finishSetup() {
   const childId = uid();
+  const parentName = localStorage.getItem('sq_parent_name') || 'Parent';
   STATE = {
-    parentName: setupData.parentName,
+    parentName: parentName,
     children: [{
       id: childId, name: setupData.childName, avatar: setupData.childAvatar,
       points: 0, level: 0, streak: 0, lastCompletionDate: '', stickers: [], completions: {}
@@ -718,6 +1100,8 @@ function finishSetup() {
     ],
     rewards: initDefaultRewards(),
     rewardRequests: [],
+    activityLog: [],
+    rewardHistory: [],
     settings: { sound: true, calm: false }
   };
   saveState();
@@ -726,8 +1110,7 @@ function finishSetup() {
 
 // ========== MAIN APP ==========
 function showApp() {
-  document.getElementById('screen-setup').classList.remove('active');
-  document.getElementById('screen-app').classList.add('active');
+  showScreen('screen-app');
   renderAll();
   generateMathQuestion();
 }
@@ -748,13 +1131,8 @@ function renderAll() {
   renderToday();
   renderStickers();
   renderRewards();
-  renderParentApprovals();
-  renderTaskManage();
-  renderRewardManage();
-  renderChildren();
-  renderChildSwitcher();
+  renderParentDashboard();
   renderSettings();
-  updateTaskChildSelect();
 }
 
 function renderHeader() {
@@ -785,6 +1163,10 @@ function renderToday() {
   const emptyAll = document.getElementById('task-empty');
   const emptyNone = document.getElementById('task-none');
   const streakBanner = document.getElementById('streak-banner');
+  const allDoneBanner = document.getElementById('all-done-banner');
+
+  // Daily quote
+  document.getElementById('quote-text').textContent = getDailyQuote();
 
   // Streak
   if (child.streak >= 2) {
@@ -798,10 +1180,27 @@ function renderToday() {
     list.innerHTML = '';
     emptyAll.style.display = 'none';
     emptyNone.style.display = 'block';
+    allDoneBanner.classList.remove('show');
+    document.getElementById('daily-goal-count').textContent = '0 / 0 tasks';
+    document.getElementById('daily-goal-fill').style.width = '0%';
     return;
   }
 
-  const allDone = tasks.every(tk => isDoneToday(tk, child, t));
+  const doneCount = tasks.filter(tk => isDoneToday(tk, child, t)).length;
+  const totalCount = tasks.length;
+  const allDone = doneCount === totalCount;
+
+  // Daily goal progress
+  document.getElementById('daily-goal-count').textContent = `${doneCount} / ${totalCount} tasks`;
+  document.getElementById('daily-goal-fill').style.width = (totalCount > 0 ? (doneCount / totalCount * 100) : 0) + '%';
+
+  // All done banner
+  if (allDone) {
+    allDoneBanner.classList.add('show');
+  } else {
+    allDoneBanner.classList.remove('show');
+  }
+
   emptyAll.style.display = allDone ? 'block' : 'none';
   emptyNone.style.display = 'none';
   list.innerHTML = '';
@@ -843,15 +1242,13 @@ function completeTask(taskId) {
   if (isDoneToday(task, child, t)) return;
 
   if (task.requiresApproval) {
-    // Add to pending approvals
     STATE.rewardRequests.push({ id: uid(), taskId, childId: child.id, type: 'task', date: t, title: task.title, icon: task.icon, points: task.points });
     saveState();
     renderToday();
-    showToast(`⏳ Waiting for grown-up approval!`);
+    showToast('⏳ Waiting for grown-up approval!');
     return;
   }
 
-  // Award immediately
   awardTask(child, task, t);
 }
 
@@ -879,16 +1276,30 @@ function awardTask(child, task, t) {
     child.stickers.push(sticker);
   }
 
+  // Activity log
+  if (!STATE.activityLog) STATE.activityLog = [];
+  STATE.activityLog.unshift({
+    text: `✅ ${task.title} (+${task.points} pts)`,
+    child: child.name,
+    time: new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })
+  });
+  if (STATE.activityLog.length > 50) STATE.activityLog = STATE.activityLog.slice(0, 50);
+
   const newLevel = getLevelInfo(child.points).index;
   saveState();
   renderAll();
 
-  // Show celebration
+  // Celebration
   const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
   showCelebration(task.icon, praise, task.title, sticker, task.points);
-
-  // Confetti
   if (!STATE.settings.calm) launchConfetti();
+
+  // Check if ALL tasks done — extra confetti
+  const tasks = STATE.tasks.filter(tk => tk.childId === child.id);
+  const allDone = tasks.every(tk => isDoneToday(tk, child, t));
+  if (allDone && !STATE.settings.calm) {
+    setTimeout(() => launchConfetti(), 600);
+  }
 
   // Level up?
   if (newLevel > oldLevel) {
@@ -913,7 +1324,7 @@ function showLevelUp(levelIndex) {
   const lvl = LEVELS[levelIndex];
   document.getElementById('lu-badge').textContent = lvl.badge;
   document.getElementById('lu-name').textContent = lvl.name + '!';
-  document.getElementById('lu-sub').textContent = `You're doing amazing! ✨`;
+  document.getElementById('lu-sub').textContent = "You're doing amazing!";
   document.getElementById('levelup').classList.add('show');
   if (!STATE.settings.calm) launchConfetti();
 }
@@ -926,17 +1337,25 @@ function closeLevelUp() {
 function renderStickers() {
   const child = getActiveChild();
   if (!child) return;
-  document.getElementById('sticker-count-text').textContent = `${child.stickers.length} Sticker${child.stickers.length !== 1 ? 's' : ''}`;
-  ['animals', 'space', 'fun'].forEach(pack => {
+  const total = ALL_STICKERS.length;
+  const earned = child.stickers.length;
+  document.getElementById('sticker-count-text').textContent = `${earned} / ${total} stickers unlocked`;
+  document.getElementById('sticker-progress-fill').style.width = (total > 0 ? (earned/total*100) : 0) + '%';
+
+  Object.keys(STICKER_PACKS).forEach(pack => {
     const grid = document.getElementById(`sticker-${pack}`);
     grid.innerHTML = '';
+    let catEarned = 0;
     STICKER_PACKS[pack].forEach(s => {
+      const isEarned = child.stickers.includes(s);
+      if (isEarned) catEarned++;
       const el = document.createElement('div');
-      const earned = child.stickers.includes(s);
-      el.className = `sticker-slot${earned ? '' : ' locked'}`;
+      el.className = `sticker-slot${isEarned ? '' : ' locked'}`;
       el.textContent = s;
       grid.appendChild(el);
     });
+    const countEl = document.getElementById(`cat-count-${pack}`);
+    if (countEl) countEl.textContent = `${catEarned}/${STICKER_PACKS[pack].length}`;
   });
 }
 
@@ -944,11 +1363,14 @@ function renderStickers() {
 function renderRewards() {
   const child = getActiveChild();
   if (!child) return;
+
+  // Points balance
+  document.getElementById('reward-points-balance').textContent = child.points;
+
   const list = document.getElementById('reward-list');
   const none = document.getElementById('reward-none');
   const pending = document.getElementById('pending-requests-area');
 
-  // Show pending redemption requests for THIS child
   const childRequests = STATE.rewardRequests.filter(r => r.childId === child.id && r.type === 'reward' && !r.approved);
   pending.innerHTML = '';
   childRequests.forEach(req => {
@@ -959,28 +1381,47 @@ function renderRewards() {
   });
 
   if (STATE.rewards.length === 0) {
-    list.innerHTML = ''; none.style.display = 'block'; return;
+    list.innerHTML = ''; none.style.display = 'block';
+  } else {
+    none.style.display = 'none';
+    list.innerHTML = '';
+    STATE.rewards.forEach(r => {
+      const canAfford = child.points >= r.pointCost;
+      const hasPending = STATE.rewardRequests.some(req => req.rewardId === r.id && req.childId === child.id && !req.approved);
+      const div = document.createElement('div');
+      div.className = 'reward-card';
+      div.innerHTML = `
+        <div class="reward-icon">${r.icon}</div>
+        <div class="reward-info">
+          <div class="reward-title">${r.title}</div>
+          <div class="reward-cost">${r.pointCost} ⭐ points</div>
+          ${hasPending ? '<div style="font-size:12px;color:var(--purple);font-weight:700">⏳ Waiting...</div>' : ''}
+        </div>
+        <button class="redeem-btn" ${(!canAfford || hasPending) ? 'disabled' : ''} onclick="redeemReward('${r.id}')">
+          ${hasPending ? '⏳' : canAfford ? 'Redeem!' : `Need ${r.pointCost - child.points} more`}
+        </button>
+      `;
+      list.appendChild(div);
+    });
   }
-  none.style.display = 'none';
-  list.innerHTML = '';
-  STATE.rewards.forEach(r => {
-    const canAfford = child.points >= r.pointCost;
-    const hasPending = STATE.rewardRequests.some(req => req.rewardId === r.id && req.childId === child.id && !req.approved);
-    const div = document.createElement('div');
-    div.className = 'reward-card';
-    div.innerHTML = `
-      <div class="reward-icon">${r.icon}</div>
-      <div class="reward-info">
-        <div class="reward-title">${r.title}</div>
-        <div class="reward-cost">${r.pointCost} ⭐ points</div>
-        ${hasPending ? '<div style="font-size:12px;color:var(--purple);font-weight:700">⏳ Waiting...</div>' : ''}
-      </div>
-      <button class="redeem-btn" ${(!canAfford || hasPending) ? 'disabled' : ''} onclick="redeemReward('${r.id}')">
-        ${hasPending ? '⏳' : canAfford ? 'Redeem!' : `Need<br>${r.pointCost - child.points} more`}
-      </button>
-    `;
-    list.appendChild(div);
-  });
+
+  // Reward history
+  const histSection = document.getElementById('reward-history-section');
+  const histList = document.getElementById('reward-history-list');
+  if (!STATE.rewardHistory) STATE.rewardHistory = [];
+  const childHist = STATE.rewardHistory.filter(h => h.childId === child.id).slice(0, 5);
+  if (childHist.length > 0) {
+    histSection.style.display = 'block';
+    histList.innerHTML = '';
+    childHist.forEach(h => {
+      const el = document.createElement('div');
+      el.className = 'reward-history-item';
+      el.innerHTML = `<span style="font-size:22px">${h.icon}</span><span style="flex:1">${h.title}</span><span class="redeemed-badge">✅ Redeemed</span>`;
+      histList.appendChild(el);
+    });
+  } else {
+    histSection.style.display = 'none';
+  }
 }
 
 function redeemReward(rewardId) {
@@ -993,10 +1434,12 @@ function redeemReward(rewardId) {
     STATE.rewardRequests.push({ id: uid(), rewardId, childId: child.id, type: 'reward', date: today(), title: reward.title, icon: reward.icon, points: reward.pointCost });
     saveState();
     renderRewards();
-    renderParentApprovals();
+    renderParentDashboard();
     showToast(`⏳ Asked a grown-up for ${reward.title}!`);
   } else {
     child.points -= reward.pointCost;
+    if (!STATE.rewardHistory) STATE.rewardHistory = [];
+    STATE.rewardHistory.unshift({ childId: child.id, title: reward.title, icon: reward.icon, date: today() });
     saveState();
     renderAll();
     showToast(`🎉 Enjoy your ${reward.title}!`);
@@ -1023,12 +1466,7 @@ function checkGate() {
     parentUnlocked = true;
     document.getElementById('parent-gate-view').style.display = 'none';
     document.getElementById('parent-dashboard-view').style.display = 'block';
-    renderParentApprovals();
-    renderTaskManage();
-    renderRewardManage();
-    renderChildren();
-    renderChildSwitcher();
-    renderSettings();
+    renderParentDashboard();
   } else {
     document.getElementById('gate-wrong').textContent = '❌ Not quite! Try again.';
     generateMathQuestion();
@@ -1044,13 +1482,36 @@ function lockParent() {
   showToast('🔒 Grown-Ups section locked');
 }
 
-// ========== PARENT: APPROVALS ==========
+// ========== PARENT DASHBOARD ==========
+function renderParentDashboard() {
+  renderParentStats();
+  renderParentApprovals();
+  renderTaskManage();
+  renderRewardManage();
+  renderActivityLog();
+  renderChildren();
+  renderChildSwitcher();
+  updateTaskChildSelect();
+}
+
+function renderParentStats() {
+  const child = getActiveChild();
+  if (!child) return;
+  const totalCompleted = Object.values(child.completions).reduce((sum, arr) => sum + arr.length, 0);
+  const container = document.getElementById('parent-stats');
+  container.innerHTML = `
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${totalCompleted}</div><div class="stat-label">Tasks Done</div></div>
+    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-value">${child.streak || 0}</div><div class="stat-label">Day Streak</div></div>
+    <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">${child.points}</div><div class="stat-label">Total Points</div></div>
+    <div class="stat-card"><div class="stat-icon">🎨</div><div class="stat-value">${child.stickers.length}/${ALL_STICKERS.length}</div><div class="stat-label">Stickers</div></div>
+  `;
+}
+
 function renderParentApprovals() {
   const list = document.getElementById('approval-list');
   const empty = document.getElementById('approval-empty');
   const pending = STATE.rewardRequests.filter(r => !r.approved);
 
-  // Badge
   const badge = document.getElementById('approval-badge');
   if (pending.length > 0) {
     badge.style.display = 'inline'; badge.textContent = ` (${pending.length})`;
@@ -1095,9 +1556,11 @@ function handleApproval(reqId, approved) {
     } else if (req.type === 'reward') {
       if (child.points >= req.points) {
         child.points -= req.points;
+        if (!STATE.rewardHistory) STATE.rewardHistory = [];
+        STATE.rewardHistory.unshift({ childId: child.id, title: req.title, icon: req.icon, date: today() });
         showToast(`🎉 ${child.name} earned ${req.title}!`);
       } else {
-        showToast(`Not enough points!`); 
+        showToast('Not enough points!');
       }
     }
   } else {
@@ -1151,14 +1614,34 @@ function renderTaskManage() {
           <div style="font-weight:800;font-size:15px">${tk.title}</div>
           <div style="font-size:12px;color:var(--muted)">${child ? child.avatar + ' ' + child.name : ''} · ${tk.points} pts · ${tk.schedule}${tk.requiresApproval ? ' · needs approval' : ''}</div>
         </div>
-        <button class="icon-btn" onclick="deleteTask('${tk.id}')">🗑️</button>
+        <button class="icon-btn" onclick="editTaskInline('${tk.id}')" title="Edit">✏️</button>
+        <button class="icon-btn" onclick="deleteTask('${tk.id}')" title="Delete">🗑️</button>
       </div>
     `;
     list.appendChild(div);
   });
 }
 
+function editTaskInline(id) {
+  const task = STATE.tasks.find(t => t.id === id);
+  if (!task) return;
+  const newName = prompt('Quest name:', task.title);
+  if (newName !== null && newName.trim()) {
+    task.title = newName.trim();
+    const newPts = prompt('Points (5-50):', task.points);
+    if (newPts !== null) {
+      const p = parseInt(newPts);
+      if (p >= 5 && p <= 50) task.points = p;
+    }
+    saveState();
+    renderTaskManage();
+    renderToday();
+    showToast('Quest updated!');
+  }
+}
+
 function deleteTask(id) {
+  if (!confirm('Delete this quest?')) return;
   STATE.tasks = STATE.tasks.filter(t => t.id !== id);
   saveState();
   renderTaskManage();
@@ -1200,19 +1683,59 @@ function renderRewardManage() {
           <div style="font-weight:800;font-size:15px">${r.title}</div>
           <div style="font-size:12px;color:var(--muted)">${r.pointCost} pts${r.requiresApproval ? ' · needs approval' : ''}</div>
         </div>
-        <button class="icon-btn" onclick="deleteReward('${r.id}')">🗑️</button>
+        <button class="icon-btn" onclick="editRewardInline('${r.id}')" title="Edit">✏️</button>
+        <button class="icon-btn" onclick="deleteReward('${r.id}')" title="Delete">🗑️</button>
       </div>
     `;
     list.appendChild(div);
   });
 }
 
+function editRewardInline(id) {
+  const reward = STATE.rewards.find(r => r.id === id);
+  if (!reward) return;
+  const newName = prompt('Reward name:', reward.title);
+  if (newName !== null && newName.trim()) {
+    reward.title = newName.trim();
+    const newCost = prompt('Point cost:', reward.pointCost);
+    if (newCost !== null) {
+      const c = parseInt(newCost);
+      if (c > 0) reward.pointCost = c;
+    }
+    saveState();
+    renderRewardManage();
+    renderRewards();
+    showToast('Reward updated!');
+  }
+}
+
 function deleteReward(id) {
+  if (!confirm('Delete this reward?')) return;
   STATE.rewards = STATE.rewards.filter(r => r.id !== id);
   saveState();
   renderRewardManage();
   renderRewards();
   showToast('Reward removed');
+}
+
+// ========== ACTIVITY LOG ==========
+function renderActivityLog() {
+  const list = document.getElementById('activity-log-list');
+  const empty = document.getElementById('activity-empty');
+  if (!list) return;
+  if (!STATE.activityLog) STATE.activityLog = [];
+  const items = STATE.activityLog.slice(0, 10);
+  if (items.length === 0) {
+    list.innerHTML = ''; empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<span style="flex:1;font-weight:700">${item.text}</span><span class="activity-time">${item.time}</span>`;
+    list.appendChild(div);
+  });
 }
 
 // ========== PARENT: CHILDREN ==========
@@ -1239,6 +1762,10 @@ function renderChildren() {
   });
 }
 
+function renderChildSwitcher() {
+  // No longer in parent settings — child switching is in Children tab
+}
+
 function selectNewChildAvatar(btn) {
   document.querySelectorAll('#new-child-avatar-grid .avatar-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1252,8 +1779,6 @@ function addChild() {
   STATE.children.push({ id, name, avatar, points: 0, level: 0, streak: 0, lastCompletionDate: '', stickers: [], completions: {} });
   saveState();
   document.getElementById('new-child-name').value = '';
-  renderChildren();
-  renderChildSwitcher();
   renderAll();
   showToast(`${avatar} ${name} added!`);
 }
@@ -1269,19 +1794,6 @@ function deleteChild(id) {
   renderAll();
 }
 
-function renderChildSwitcher() {
-  const sw = document.getElementById('child-switcher');
-  if (!sw) return;
-  sw.innerHTML = '';
-  STATE.children.forEach(c => {
-    const btn = document.createElement('button');
-    btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:12px;background:' + (c.id === STATE.activeChildId ? '#F3EEFF' : '#F9F9F9') + ';border:2px solid ' + (c.id === STATE.activeChildId ? 'var(--purple)' : 'transparent') + ';border-radius:14px;margin-bottom:8px;cursor:pointer;font-family:Nunito,sans-serif;font-size:16px;font-weight:700;color:var(--text)';
-    btn.innerHTML = `<span style="font-size:28px">${c.avatar}</span> ${c.name} ${c.id === STATE.activeChildId ? '(active)' : ''}`;
-    btn.onclick = () => switchChild(c.id);
-    sw.appendChild(btn);
-  });
-}
-
 function switchChild(id) {
   STATE.activeChildId = id;
   saveState();
@@ -1295,6 +1807,20 @@ function switchChild(id) {
 function renderSettings() {
   setToggle('setting-sound', STATE.settings.sound);
   setToggle('setting-calm', STATE.settings.calm);
+
+  const child = getActiveChild();
+  const parentName = STATE.parentName || localStorage.getItem('sq_parent_name') || 'Parent';
+  document.getElementById('settings-parent-name').textContent = parentName;
+  const rawEmail = localStorage.getItem('sq_parent_email');
+  document.getElementById('settings-email').textContent = rawEmail ? atob(rawEmail) : '—';
+  if (child) {
+    document.getElementById('settings-child-name').textContent = child.name;
+    document.getElementById('settings-child-avatar').textContent = child.avatar;
+  }
+  const consentDate = localStorage.getItem('sq_consent_date');
+  document.getElementById('settings-consent-status').textContent = consentDate
+    ? `✅ Consent given on ${consentDate}`
+    : 'No consent on file';
 }
 
 function toggleSetting(key) {
@@ -1314,6 +1840,128 @@ function setToggle(id, val) {
   if (val) el.classList.add('on'); else el.classList.remove('on');
 }
 
+function editParentName() {
+  const current = STATE.parentName || '';
+  const newName = prompt('Parent name:', current);
+  if (newName !== null && newName.trim()) {
+    STATE.parentName = newName.trim();
+    localStorage.setItem('sq_parent_name', newName.trim());
+    saveState();
+    renderSettings();
+    showToast('Name updated!');
+  }
+}
+
+function editChildName() {
+  const child = getActiveChild();
+  if (!child) return;
+  const newName = prompt('Child name:', child.name);
+  if (newName !== null && newName.trim()) {
+    child.name = newName.trim();
+    saveState();
+    renderAll();
+    showToast('Name updated!');
+  }
+}
+
+function showChangeAvatarModal() {
+  const avatars = ['🦄','🦁','🐸','🐼','🐯','🦊','🐻','🦋','🐙','🦖','🐶','🐱','🐰','🐧','🦜'];
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Change Avatar</div>';
+  html += '<div class="modal-sub">Pick a new avatar for your child</div>';
+  html += '<div class="avatar-grid">';
+  avatars.forEach(a => {
+    html += `<button class="avatar-btn" onclick="setChildAvatar('${a}')">${a}</button>`;
+  });
+  html += '</div>';
+  openModal(html);
+}
+
+function setChildAvatar(emoji) {
+  const child = getActiveChild();
+  if (!child) return;
+  child.avatar = emoji;
+  saveState();
+  renderAll();
+  closeModal();
+  showToast('Avatar updated!');
+}
+
+function showChangePasswordModal() {
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Change Password</div>';
+  html += '<div class="modal-sub">Enter your current and new password</div>';
+  html += '<div class="form-group"><label class="form-label">Current Password</label><input class="form-input" id="cp-current" type="password"></div>';
+  html += '<div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="cp-new" type="password"></div>';
+  html += '<div class="form-group"><label class="form-label">Confirm New Password</label><input class="form-input" id="cp-confirm" type="password"></div>';
+  html += '<div class="login-error" id="cp-error"></div>';
+  html += '<button class="btn-primary" onclick="doChangePassword()">Update Password</button>';
+  openModal(html);
+}
+
+function doChangePassword() {
+  const current = document.getElementById('cp-current').value;
+  const newPw = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const storedPw = localStorage.getItem('sq_parent_password');
+  if (storedPw !== btoa(current)) { document.getElementById('cp-error').textContent = 'Current password is incorrect.'; return; }
+  if (newPw.length < 4) { document.getElementById('cp-error').textContent = 'New password must be at least 4 characters.'; return; }
+  if (newPw !== confirm) { document.getElementById('cp-error').textContent = 'Passwords do not match.'; return; }
+  localStorage.setItem('sq_parent_password', btoa(newPw));
+  closeModal();
+  showToast('Password updated!');
+}
+
+function showPrivacyModal() {
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Privacy Policy</div>';
+  html += '<div style="padding:16px 0">';
+  html += '<iframe src="privacy.html" style="width:100%;height:60vh;border:none;border-radius:12px;background:#f9f9f9" title="Privacy Policy"></iframe>';
+  html += '</div>';
+  openModal(html);
+}
+
+function showTermsModal() {
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Terms of Use</div>';
+  html += '<div style="padding:16px 0;font-size:14px;color:var(--text);line-height:1.7">';
+  html += '<p><strong>Sticker Quest - Terms of Use</strong></p>';
+  html += '<p>By using Sticker Quest, you agree to the following terms:</p>';
+  html += '<p>1. <strong>Acceptance:</strong> These terms govern your use of the Sticker Quest application.</p>';
+  html += '<p>2. <strong>Privacy:</strong> We are committed to protecting your family\'s privacy. All data is stored locally on your device.</p>';
+  html += '<p>3. <strong>Content:</strong> Sticker Quest is designed for children and families. Content is age-appropriate and educational.</p>';
+  html += '<p>4. <strong>Data:</strong> No personal data is collected, transmitted, or shared with third parties.</p>';
+  html += '<p>5. <strong>Changes:</strong> We may update these terms from time to time. Continued use constitutes acceptance.</p>';
+  html += '<p style="color:var(--muted);margin-top:16px">Last updated: 2025</p>';
+  html += '</div>';
+  openModal(html);
+}
+
+function showCOPPAModal() {
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">COPPA Disclosure</div>';
+  html += '<div style="padding:16px 0;font-size:14px;color:var(--text);line-height:1.7">';
+  html += '<p><strong>Children\'s Online Privacy Protection Act (COPPA) Compliance</strong></p>';
+  html += '<p>Sticker Quest is designed with children\'s privacy as a top priority.</p>';
+  html += '<p><strong>What data we collect:</strong> Sticker Quest stores child names, avatars, and task completion data locally on your device only.</p>';
+  html += '<p><strong>How data is used:</strong> Data is used solely within the app to track progress and rewards. No data is transmitted to external servers.</p>';
+  html += '<p><strong>Parental consent:</strong> A parent or guardian must provide consent during account setup. Parents may review, modify, or delete all data at any time through the Settings screen.</p>';
+  html += '<p><strong>Data sharing:</strong> We do not share, sell, or transmit any personal information to third parties.</p>';
+  html += '<p><strong>Contact:</strong> For questions about privacy practices, please refer to our Privacy Policy.</p>';
+  html += '</div>';
+  openModal(html);
+}
+
+function withdrawConsent() {
+  if (!confirm('Withdraw parental consent? This will clear consent records and sign you out.')) return;
+  localStorage.removeItem('sq_consent_date');
+  localStorage.removeItem('sq_logged_in');
+  parentUnlocked = false;
+  showScreen('screen-login');
+  showSignIn();
+  showToast('Consent withdrawn. Signed out.');
+}
+
 function confirmReset() {
   const child = getActiveChild();
   if (!confirm(`Reset ALL progress for ${child?.name}? This cannot be undone!`)) return;
@@ -1321,16 +1969,29 @@ function confirmReset() {
     child.points = 0; child.level = 0; child.streak = 0;
     child.lastCompletionDate = ''; child.stickers = []; child.completions = {};
     STATE.rewardRequests = STATE.rewardRequests.filter(r => r.childId !== child.id);
+    if (STATE.rewardHistory) STATE.rewardHistory = STATE.rewardHistory.filter(h => h.childId !== child.id);
     saveState();
     renderAll();
     showToast(`${child.name}'s data reset.`);
   }
 }
 
+// ========== MODAL SYSTEM ==========
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
 // ========== NAVIGATION ==========
 function switchTab(tab) {
-  ['today','stickers','rewards','parents'].forEach(t => {
-    document.getElementById(`tab-${t}`).style.display = 'none';
+  const tabs = ['today','stickers','rewards','parents','settings'];
+  tabs.forEach(t => {
+    const el = document.getElementById(`tab-${t}`);
+    if (el) el.style.display = 'none';
     document.getElementById(`tabBtn-${t}`)?.classList.remove('active');
   });
   document.getElementById(`tab-${tab}`).style.display = 'flex';
@@ -1342,10 +2003,10 @@ function switchTab(tab) {
   }
 }
 
-function switchParentTab(tab) {
+function switchParentTab(btn, tab) {
   document.querySelectorAll('.parent-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.parent-section').forEach(s => s.classList.remove('active'));
-  event.target.classList.add('active');
+  btn.classList.add('active');
   document.getElementById(`p-${tab}`)?.classList.add('active');
   currentParentTab = tab;
 }
@@ -1377,11 +2038,11 @@ function showToast(msg) {
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
-  if (loadState()) {
-    // Existing data — go straight to app
-    showApp();
+  const loggedIn = localStorage.getItem('sq_logged_in') === 'true';
+  if (loggedIn) {
+    proceedAfterLogin();
   }
-  // else: setup screen already shown
+  // else: login screen already shown
 });
 
 // Fast-tap: fire clicks on touchend so there's zero 300ms delay
@@ -1390,5 +2051,3 @@ document.addEventListener('touchstart', () => {}, { passive: true });
 </script>
 </body>
 </html>
-
-
