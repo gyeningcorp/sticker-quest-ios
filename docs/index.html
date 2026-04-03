@@ -348,6 +348,7 @@
         <span style="margin:0 8px;color:var(--muted)">|</span>
         <span class="login-link" onclick="showForgotPassword()">Forgot Password?</span>
       </div>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">📱 Switching devices? <span class="login-link" onclick="showImportBackup()" style="font-size:13px">Restore from backup code</span></div>
     </div>
 
     <!-- Register Form -->
@@ -839,6 +840,33 @@
       </div>
     </div>
 
+    <!-- Account Backup Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">Account Backup</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="showExportBackup()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📦</span>
+            <div>
+              <div class="settings-row-text">Export Account Data</div>
+              <div class="settings-row-sub">Save a backup code for your account</div>
+            </div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+        <div class="settings-row" onclick="showImportBackup()">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📥</span>
+            <div>
+              <div class="settings-row-text">Restore from Backup Code</div>
+              <div class="settings-row-sub">Import data from another device</div>
+            </div>
+          </div>
+          <div class="settings-row-right">›</div>
+        </div>
+      </div>
+    </div>
+
     <div style="padding:20px 0;text-align:center">
       <div style="font-size:13px;color:var(--muted)">Sticker Quest v1.1</div>
     </div>
@@ -1041,6 +1069,22 @@ function doForgotPassword() {
 
 function doSignOut() {
   if (!confirm('Sign out of Sticker Quest?')) return;
+  // Show backup prompt before signing out
+  const backupCode = generateBackupCode();
+  if (backupCode) {
+    let html = '<button class="modal-close" onclick="closeModal();completeSignOut()">✕</button>';
+    html += '<div class="modal-title">Before You Go!</div>';
+    html += '<div class="modal-sub">Save your backup code so you can restore your account on any device.</div>';
+    html += '<textarea readonly style="width:100%;height:120px;border:2px solid #EEE;border-radius:12px;padding:12px;font-size:12px;font-family:monospace;resize:none;background:#FAFAFA;margin:12px 0;word-break:break-all">' + backupCode + '</textarea>';
+    html += '<button class="btn-primary" style="margin-top:0;margin-bottom:8px" onclick="copyBackupCode(this)">📋 Copy to Clipboard</button>';
+    html += '<button class="btn-secondary" onclick="closeModal();completeSignOut()">Sign Out Without Saving</button>';
+    openModal(html);
+  } else {
+    completeSignOut();
+  }
+}
+
+function completeSignOut() {
   localStorage.removeItem('sq_logged_in');
   parentUnlocked = false;
   showScreen('screen-login');
@@ -1973,6 +2017,76 @@ function confirmReset() {
     saveState();
     renderAll();
     showToast(`${child.name}'s data reset.`);
+  }
+}
+
+// ========== BACKUP / RESTORE ==========
+const SQ_KEYS = ['sq_logged_in','sq_parent_email','sq_parent_name','sq_parent_password','sq_child_name','sq_child_avatar','sq_points','sq_level','sq_tasks','sq_stickers','sq_rewards','sq_consent_date','sq_streak','sq_last_active','sq_activity_log'];
+
+function generateBackupCode() {
+  const data = {};
+  SQ_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v !== null) data[k] = v;
+  });
+  if (Object.keys(data).length === 0) return null;
+  return btoa(JSON.stringify(data));
+}
+
+function showExportBackup() {
+  const code = generateBackupCode();
+  if (!code) { showToast('No account data to export.'); return; }
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Your Backup Code</div>';
+  html += '<div class="modal-sub">Save this code somewhere safe. Use it to restore your account on any device.</div>';
+  html += '<textarea readonly id="backup-code-output" style="width:100%;height:140px;border:2px solid #EEE;border-radius:12px;padding:12px;font-size:12px;font-family:monospace;resize:none;background:#FAFAFA;margin:12px 0;word-break:break-all">' + code + '</textarea>';
+  html += '<button class="btn-primary" style="margin-top:0" onclick="copyBackupCode(this)">📋 Copy to Clipboard</button>';
+  openModal(html);
+}
+
+function copyBackupCode(btn) {
+  const code = btn.parentElement.querySelector('textarea').value;
+  navigator.clipboard.writeText(code).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => {
+    // Fallback: select the textarea
+    const ta = btn.parentElement.querySelector('textarea');
+    ta.select();
+    document.execCommand('copy');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function showImportBackup() {
+  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-title">Restore Account</div>';
+  html += '<div class="modal-sub">Paste your backup code below to restore your account data.</div>';
+  html += '<textarea id="backup-code-input" placeholder="Paste your backup code here" style="width:100%;height:140px;border:2px solid #EEE;border-radius:12px;padding:12px;font-size:12px;font-family:monospace;resize:none;background:#FAFAFA;margin:12px 0;word-break:break-all"></textarea>';
+  html += '<div style="font-size:13px;color:#FF9671;font-weight:700;margin-bottom:12px">⚠️ This will replace all current data on this device.</div>';
+  html += '<button class="btn-primary" style="margin-top:0;margin-bottom:8px" onclick="doRestoreBackup()">Restore</button>';
+  html += '<button class="btn-secondary" onclick="closeModal()">Cancel</button>';
+  openModal(html);
+}
+
+function doRestoreBackup() {
+  const input = document.getElementById('backup-code-input').value.trim();
+  if (!input) { showToast('Please paste a backup code.'); return; }
+  try {
+    const data = JSON.parse(atob(input));
+    if (typeof data !== 'object' || data === null) throw new Error('Invalid');
+    // Write all sq_ keys
+    Object.keys(data).forEach(k => {
+      if (k.startsWith('sq_')) localStorage.setItem(k, data[k]);
+    });
+    closeModal();
+    showToast('Account restored successfully!');
+    setTimeout(() => location.reload(), 800);
+  } catch (e) {
+    showToast('Invalid backup code. Please try again.');
   }
 }
 
