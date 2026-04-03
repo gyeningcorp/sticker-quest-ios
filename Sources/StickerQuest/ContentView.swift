@@ -3,6 +3,7 @@ import WebKit
 
 struct WebView: UIViewRepresentable {
     @Binding var isLoading: Bool
+    var userIdentifier: String
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -43,6 +44,10 @@ struct WebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             parent.isLoading = false
             webView.scrollView.refreshControl?.endRefreshing()
+            // Inject user ID for backend sync
+            let userId = parent.userIdentifier.replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "\"", with: "\\\"")
+            webView.evaluateJavaScript("window.STICKER_QUEST_USER_ID = \"\(userId)\";", completionHandler: nil)
         }
         @objc func handleRefresh(_ sender: UIRefreshControl) {
             (sender.superview?.superview as? WKWebView)?.reload()
@@ -71,12 +76,13 @@ struct WebView: UIViewRepresentable {
 }
 
 struct ContentView: View {
+    @AppStorage("userIdentifier") private var userIdentifier = ""
     @State private var isLoading = true
 
     var body: some View {
         ZStack {
             Color(red: 1.0, green: 0.42, blue: 0.62).ignoresSafeArea()
-            WebView(isLoading: $isLoading)
+            WebView(isLoading: $isLoading, userIdentifier: userIdentifier)
                 .ignoresSafeArea()
             if isLoading {
                 ProgressView()
