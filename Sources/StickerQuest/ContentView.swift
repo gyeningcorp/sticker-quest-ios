@@ -47,7 +47,7 @@ struct WebView: UIViewRepresentable {
             // Inject user ID for backend sync
             let userId = parent.userIdentifier.replacingOccurrences(of: "\\", with: "\\\\")
                 .replacingOccurrences(of: "\"", with: "\\\"")
-            webView.evaluateJavaScript("window.STICKER_QUEST_USER_ID = \"\(userId)\";", completionHandler: nil)
+            webView.evaluateJavaScript("window.STICKER_QUEST_USER_ID = \"\(userId)\"; window.SQ_NATIVE_APP = true;", completionHandler: nil)
         }
         @objc func handleRefresh(_ sender: UIRefreshControl) {
             (sender.superview?.superview as? WKWebView)?.reload()

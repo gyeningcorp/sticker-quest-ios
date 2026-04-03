@@ -2152,6 +2152,13 @@ function showToast(msg) {
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
+  // If running inside the native iOS app (Sign In with Apple already handled natively),
+  // skip the web login screen entirely and go straight to the app
+  if (window.SQ_NATIVE_APP) {
+    localStorage.setItem('sq_logged_in', 'true');
+    proceedAfterLogin();
+    return;
+  }
   const loggedIn = localStorage.getItem('sq_logged_in') === 'true';
   if (loggedIn) {
     proceedAfterLogin();
