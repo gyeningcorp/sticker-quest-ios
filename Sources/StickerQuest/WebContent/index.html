@@ -1669,19 +1669,86 @@ function renderTaskManage() {
 function editTaskInline(id) {
   const task = STATE.tasks.find(t => t.id === id);
   if (!task) return;
-  const newName = prompt('Quest name:', task.title);
-  if (newName !== null && newName.trim()) {
-    task.title = newName.trim();
-    const newPts = prompt('Points (5-50):', task.points);
-    if (newPts !== null) {
-      const p = parseInt(newPts);
-      if (p >= 5 && p <= 50) task.points = p;
-    }
-    saveState();
-    renderTaskManage();
-    renderToday();
-    showToast('Quest updated!');
+
+  const taskIcons = ['🛏️','🦷','🧸','🍽️','🐾','👐','📚','🧺','🌱','❤️','👂','🎯','🧹','🚿','🐶','✏️','🎨','🏃','🌟','🧃'];
+
+  let iconBtns = taskIcons.map(e =>
+    `<button class="emoji-pick-btn${e === task.icon ? ' selected' : ''}" data-emoji="${e}" onclick="(function(btn){document.querySelectorAll('#edit-task-icon-picker .emoji-pick-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');})(this)">${e}</button>`
+  ).join('');
+
+  const childOptions = STATE.children.map(c =>
+    `<option value="${c.id}"${c.id === task.childId ? ' selected' : ''}>${c.avatar} ${c.name}</option>`
+  ).join('');
+
+  let html = `<button class="modal-close" onclick="closeModal()">✕</button>`;
+  html += `<div class="modal-title">✏️ Edit Quest</div>`;
+  html += `<div class="modal-sub">Update this quest's details</div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Quest Name</label>
+    <input class="form-input" id="edit-task-title" value="${task.title}" maxlength="40">
+  </div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Icon</label>
+    <div class="emoji-picker" id="edit-task-icon-picker">${iconBtns}</div>
+  </div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Points (5–50): <span id="edit-task-pts-val" style="color:var(--purple);font-size:18px;font-weight:900">${task.points}</span></label>
+    <div class="points-slider-wrap">
+      <input type="range" id="edit-task-points" min="5" max="50" value="${task.points}" step="5"
+        oninput="document.getElementById('edit-task-pts-val').textContent=this.value">
+    </div>
+  </div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Schedule</label>
+    <select class="form-input" id="edit-task-schedule">
+      <option value="daily"${task.schedule === 'daily' ? ' selected' : ''}>Daily</option>
+      <option value="weekly"${task.schedule === 'weekly' ? ' selected' : ''}>Weekly</option>
+    </select>
+  </div>`;
+
+  if (STATE.children.length > 1) {
+    html += `<div class="form-group">
+      <label class="form-label">For child</label>
+      <select class="form-input" id="edit-task-child">${childOptions}</select>
+    </div>`;
   }
+
+  html += `<div class="toggle-row">
+    <div><div class="toggle-label">Parent Approval Required</div><div class="toggle-sub">Require your OK before awarding points</div></div>
+    <div class="toggle${task.requiresApproval ? ' on' : ''}" id="edit-task-approval-toggle" onclick="toggleEl('edit-task-approval-toggle')"></div>
+  </div>`;
+
+  html += `<button class="btn-primary" style="margin-top:16px" onclick="saveEditedTask('${id}')">Save Changes</button>`;
+  html += `<button class="btn-secondary" style="margin-top:10px" onclick="closeModal()">Cancel</button>`;
+
+  openModal(html);
+}
+
+function saveEditedTask(id) {
+  const task = STATE.tasks.find(t => t.id === id);
+  if (!task) return;
+
+  const newTitle = document.getElementById('edit-task-title').value.trim();
+  if (!newTitle) { showToast('Quest name cannot be empty!'); return; }
+
+  task.title = newTitle;
+  task.icon = document.querySelector('#edit-task-icon-picker .emoji-pick-btn.selected')?.dataset.emoji || task.icon;
+  task.points = parseInt(document.getElementById('edit-task-points').value) || task.points;
+  task.schedule = document.getElementById('edit-task-schedule').value;
+  if (STATE.children.length > 1) {
+    task.childId = document.getElementById('edit-task-child').value;
+  }
+  task.requiresApproval = document.getElementById('edit-task-approval-toggle').classList.contains('on');
+
+  saveState();
+  closeModal();
+  renderTaskManage();
+  renderToday();
+  showToast('✅ Quest updated!');
 }
 
 function deleteTask(id) {
@@ -1738,19 +1805,69 @@ function renderRewardManage() {
 function editRewardInline(id) {
   const reward = STATE.rewards.find(r => r.id === id);
   if (!reward) return;
-  const newName = prompt('Reward name:', reward.title);
-  if (newName !== null && newName.trim()) {
-    reward.title = newName.trim();
-    const newCost = prompt('Point cost:', reward.pointCost);
-    if (newCost !== null) {
-      const c = parseInt(newCost);
-      if (c > 0) reward.pointCost = c;
-    }
-    saveState();
-    renderRewardManage();
-    renderRewards();
-    showToast('Reward updated!');
-  }
+
+  const rewardIcons = ['🎬','🍦','🎮','🏖️','🎁','🍕','🎯','📱','🌈','⭐','🎪','🎡','🛒','🚗','✈️','🎠','🎆','🍰','🎤','🎸'];
+
+  let iconBtns = rewardIcons.map(e =>
+    `<button class="emoji-pick-btn${e === reward.icon ? ' selected' : ''}" data-emoji="${e}" onclick="(function(btn){document.querySelectorAll('#edit-reward-icon-picker .emoji-pick-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');})(this)">${e}</button>`
+  ).join('');
+
+  let html = `<button class="modal-close" onclick="closeModal()">✕</button>`;
+  html += `<div class="modal-title">✏️ Edit Reward</div>`;
+  html += `<div class="modal-sub">Update this reward's details</div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Reward Name</label>
+    <input class="form-input" id="edit-reward-title" value="${reward.title}" maxlength="40">
+  </div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Icon</label>
+    <div class="emoji-picker" id="edit-reward-icon-picker">${iconBtns}</div>
+  </div>`;
+
+  html += `<div class="form-group">
+    <label class="form-label">Point Cost</label>
+    <div style="display:flex;align-items:center;gap:12px">
+      <input class="form-input" id="edit-reward-points" type="number" value="${reward.pointCost}" min="1" max="9999" style="font-size:22px;font-weight:900;text-align:center;max-width:140px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button onclick="(function(){const i=document.getElementById('edit-reward-points');i.value=Math.min(9999,parseInt(i.value||0)+5)})()" style="padding:8px 16px;font-size:18px;font-weight:900;background:var(--teal);color:white;border:none;border-radius:10px;cursor:pointer">+5</button>
+        <button onclick="(function(){const i=document.getElementById('edit-reward-points');i.value=Math.max(1,parseInt(i.value||0)-5)})()" style="padding:8px 16px;font-size:18px;font-weight:900;background:var(--orange);color:white;border:none;border-radius:10px;cursor:pointer">−5</button>
+      </div>
+    </div>
+  </div>`;
+
+  html += `<div class="toggle-row">
+    <div><div class="toggle-label">Requires Approval</div><div class="toggle-sub">Must OK before child can redeem</div></div>
+    <div class="toggle${reward.requiresApproval ? ' on' : ''}" id="edit-reward-approval-toggle" onclick="toggleEl('edit-reward-approval-toggle')"></div>
+  </div>`;
+
+  html += `<button class="btn-primary" style="margin-top:16px" onclick="saveEditedReward('${id}')">Save Changes</button>`;
+  html += `<button class="btn-secondary" style="margin-top:10px" onclick="closeModal()">Cancel</button>`;
+
+  openModal(html);
+}
+
+function saveEditedReward(id) {
+  const reward = STATE.rewards.find(r => r.id === id);
+  if (!reward) return;
+
+  const newTitle = document.getElementById('edit-reward-title').value.trim();
+  if (!newTitle) { showToast('Reward name cannot be empty!'); return; }
+
+  const newCost = parseInt(document.getElementById('edit-reward-points').value);
+  if (!newCost || newCost < 1) { showToast('Point cost must be at least 1!'); return; }
+
+  reward.title = newTitle;
+  reward.icon = document.querySelector('#edit-reward-icon-picker .emoji-pick-btn.selected')?.dataset.emoji || reward.icon;
+  reward.pointCost = newCost;
+  reward.requiresApproval = document.getElementById('edit-reward-approval-toggle').classList.contains('on');
+
+  saveState();
+  closeModal();
+  renderRewardManage();
+  renderRewards();
+  showToast('🎁 Reward updated!');
 }
 
 function deleteReward(id) {
