@@ -9,6 +9,15 @@ struct WebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
+        // Block all external network requests — Kids category requirement
+        let blockRule = """
+        [{"trigger":{"url-filter":".*","unless-top-url":["^file://"]},"action":{"type":"block"}}]
+        """
+        WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "BlockExternal", encodedContentRuleList: blockRule) { ruleList, _ in
+            if let ruleList = ruleList {
+                config.userContentController.add(ruleList)
+            }
+        }
         config.allowsInlineMediaPlayback = true
         // Allow local file access for bundled content
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")

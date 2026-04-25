@@ -41,10 +41,6 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
-          NSExceptionDomains:
-            sticker-quest-production.up.railway.app:
-              NSExceptionAllowsInsecureHTTPLoads: false
-              NSIncludesSubdomains: false
     entitlements:
       path: Sources/StickerQuest/StickerQuest.entitlements
     settings:
