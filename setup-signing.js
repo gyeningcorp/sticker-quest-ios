@@ -117,6 +117,26 @@ async function main() {
     console.log(`✅ Registered bundle ID: ${bundleIdRecord.id}`);
   }
 
+  console.log('🔐 Ensuring Sign In With Apple capability is enabled...');
+  const caps = await apiCall('GET', `/v1/bundleIds/${bundleIdRecord.id}/bundleIdCapabilities`);
+  const hasSIWA = (caps.body.data || []).some(c => c.attributes?.capabilityType === 'APPLE_ID_AUTH');
+  if (!hasSIWA) {
+    const siwaRes = await apiCall('POST', '/v1/bundleIdCapabilities', {
+      data: {
+        type: 'bundleIdCapabilities',
+        attributes: {
+          capabilityType: 'APPLE_ID_AUTH',
+          settings: [{ key: 'APPLE_ID_AUTH_APP_CONSENT', options: [{ key: 'PRIMARY_APP_CONSENT' }] }]
+        },
+        relationships: { bundleId: { data: { type: 'bundleIds', id: bundleIdRecord.id } } }
+      }
+    });
+    if (siwaRes.status !== 201) { console.error('SIWA enable failed:', JSON.stringify(siwaRes.body)); process.exit(1); }
+    console.log('✅ Sign In With Apple enabled');
+  } else {
+    console.log('✅ Sign In With Apple already enabled');
+  }
+
   console.log('📋 Deleting old App Store profiles...');
   const existingProfiles = await apiCall('GET', '/v1/profiles?filter[profileType]=IOS_APP_STORE');
   for (const p of (existingProfiles.body.data || [])) {
