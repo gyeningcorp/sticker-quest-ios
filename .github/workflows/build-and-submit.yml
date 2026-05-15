@@ -50,10 +50,13 @@ jobs:
           TEAM_ID: 4LZJ7U5FHS
           BUNDLE_ID: com.gyeningcorp.stickerquest
 
-      - name: Set build number
+      - name: Set version + build number
         run: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" Sources/StickerQuest/Info.plist
+          APP_VERSION=$(grep '^        MARKETING_VERSION:' project.yml | awk '{print $2}' | tr -d '"')
+          echo "Marketing version: $APP_VERSION"
           echo "Build number: $GITHUB_RUN_NUMBER"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" Sources/StickerQuest/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" Sources/StickerQuest/Info.plist
 
       - name: Generate app icons
         run: |

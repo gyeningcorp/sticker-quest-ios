@@ -5,8 +5,8 @@
     <key>CFBundleName</key><string>Sticker Quest</string>
     <key>CFBundleDisplayName</key><string>Sticker Quest</string>
     <key>CFBundleIdentifier</key><string>com.gyeningcorp.stickerquest</string>
-    <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
-    <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+    <key>CFBundleVersion</key><string>1</string>
+    <key>CFBundleShortVersionString</key><string>1.2</string>
     <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
