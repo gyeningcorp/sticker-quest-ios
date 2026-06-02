@@ -4,8 +4,10 @@ import AuthenticationServices
 struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
     @AppStorage("userIdentifier") private var userIdentifier = ""
+    @AppStorage("usingAppleAccount") private var usingAppleAccount = false
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var bounce = false
 
     var body: some View {
         ZStack {
@@ -16,41 +18,86 @@ struct LoginView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            // Soft decorative bubbles
+            GeometryReader { geo in
+                Circle().fill(Color.white.opacity(0.08))
+                    .frame(width: 220, height: 220)
+                    .position(x: geo.size.width * 0.85, y: geo.size.height * 0.15)
+                Circle().fill(Color.white.opacity(0.06))
+                    .frame(width: 160, height: 160)
+                    .position(x: geo.size.width * 0.1, y: geo.size.height * 0.8)
+            }
+            .ignoresSafeArea()
+
+            VStack(spacing: 0) {
                 Spacer()
 
                 Text("⭐")
-                    .font(.system(size: 80))
+                    .font(.system(size: 88))
+                    .offset(y: bounce ? -10 : 0)
+                    .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: bounce)
+                    .onAppear { bounce = true }
 
                 Text("Sticker Quest")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.system(size: 38, weight: .black, design: .rounded))
                     .foregroundColor(.white)
+                    .padding(.top, 12)
 
-                Text("Let's get started!")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.9))
+                Text("Chores + Behavior = Rewards!")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .padding(.top, 4)
 
                 Spacer()
 
-                SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName, .email]
-                } onCompletion: { result in
-                    handleSignIn(result)
+                VStack(spacing: 14) {
+                    // PRIMARY: start instantly, no account needed (Kids-friendly, local-only)
+                    Button(action: startLocal) {
+                        HStack(spacing: 10) {
+                            Text("🚀")
+                            Text("Start Playing")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                        }
+                        .foregroundColor(Color(hex: "845EC2"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(Color.white)
+                        .cornerRadius(18)
+                        .shadow(color: .black.opacity(0.18), radius: 12, y: 6)
+                    }
+
+                    // OPTIONAL: Sign in with Apple for cross-device sync
+                    SignInWithAppleButton(.signIn) { request in
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { result in
+                        handleSignIn(result)
+                    }
+                    .signInWithAppleButtonStyle(.white)
+                    .frame(height: 54)
+                    .cornerRadius(18)
+
+                    Text("Sign in is optional — only for syncing across devices.\nNo account is needed to play.")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.top, 4)
                 }
-                .signInWithAppleButtonStyle(.whiteOutline)
-                .frame(height: 50)
-                .padding(.horizontal, 40)
-
-                Spacer()
-                    .frame(height: 60)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 50)
             }
         }
         .alert("Sign In Failed", isPresented: $showError) {
-            Button("Retry") {}
+            Button("OK") {}
         } message: {
             Text(errorMessage)
         }
+    }
+
+    // Local-only mode: no personal data, works fully offline.
+    private func startLocal() {
+        userIdentifier = ""
+        usingAppleAccount = false
+        withAnimation { isLoggedIn = true }
     }
 
     private func handleSignIn(_ result: Result<ASAuthorization, Error>) {
@@ -69,9 +116,13 @@ struct LoginView: View {
                 if let email = credential.email {
                     UserDefaults.standard.set(email, forKey: "userEmail")
                 }
-                isLoggedIn = true
+                usingAppleAccount = true
+                withAnimation { isLoggedIn = true }
             }
         case .failure(let error):
+            // User cancelling the sheet should not feel like an error — only show real failures.
+            let nsError = error as NSError
+            if nsError.code == ASAuthorizationError.canceled.rawValue { return }
             errorMessage = error.localizedDescription
             showError = true
         }
