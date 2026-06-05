@@ -1,12 +1,9 @@
 import SwiftUI
-import AuthenticationServices
 
 struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
     @AppStorage("userIdentifier") private var userIdentifier = ""
     @AppStorage("usingAppleAccount") private var usingAppleAccount = false
-    @State private var showError = false
-    @State private var errorMessage = ""
     @State private var bounce = false
 
     var body: some View {
@@ -51,7 +48,7 @@ struct LoginView: View {
                 Spacer()
 
                 VStack(spacing: 14) {
-                    // PRIMARY: start instantly, no account needed (Kids-friendly, local-only)
+                    // Start instantly — no account needed (Kids-friendly, local-only)
                     Button(action: startLocal) {
                         HStack(spacing: 10) {
                             Text("🚀")
@@ -66,17 +63,7 @@ struct LoginView: View {
                         .shadow(color: .black.opacity(0.18), radius: 12, y: 6)
                     }
 
-                    // OPTIONAL: Sign in with Apple for cross-device sync
-                    SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName, .email]
-                    } onCompletion: { result in
-                        handleSignIn(result)
-                    }
-                    .signInWithAppleButtonStyle(.white)
-                    .frame(height: 54)
-                    .cornerRadius(18)
-
-                    Text("Sign in is optional — only for syncing across devices.\nNo account is needed to play.")
+                    Text("No account needed to play.\nUse an export code to sync across devices.")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .multilineTextAlignment(.center)
                         .foregroundColor(.white.opacity(0.8))
@@ -86,11 +73,6 @@ struct LoginView: View {
                 .padding(.bottom, 50)
             }
         }
-        .alert("Sign In Failed", isPresented: $showError) {
-            Button("OK") {}
-        } message: {
-            Text(errorMessage)
-        }
     }
 
     // Local-only mode: no personal data, works fully offline.
@@ -98,34 +80,6 @@ struct LoginView: View {
         userIdentifier = ""
         usingAppleAccount = false
         withAnimation { isLoggedIn = true }
-    }
-
-    private func handleSignIn(_ result: Result<ASAuthorization, Error>) {
-        switch result {
-        case .success(let authorization):
-            if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
-                userIdentifier = credential.user
-                if let fullName = credential.fullName {
-                    let name = [fullName.givenName, fullName.familyName]
-                        .compactMap { $0 }
-                        .joined(separator: " ")
-                    if !name.isEmpty {
-                        UserDefaults.standard.set(name, forKey: "userName")
-                    }
-                }
-                if let email = credential.email {
-                    UserDefaults.standard.set(email, forKey: "userEmail")
-                }
-                usingAppleAccount = true
-                withAnimation { isLoggedIn = true }
-            }
-        case .failure(let error):
-            // User cancelling the sheet should not feel like an error — only show real failures.
-            let nsError = error as NSError
-            if nsError.code == ASAuthorizationError.canceled.rawValue { return }
-            errorMessage = error.localizedDescription
-            showError = true
-        }
     }
 }
 
