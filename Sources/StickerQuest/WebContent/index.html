@@ -708,7 +708,7 @@
           </div>
           <div class="settings-row-right">›</div>
         </div>
-        <div class="settings-row">
+        <div class="settings-row" id="settings-email-row">
           <div class="settings-row-left">
             <span class="settings-row-icon">📧</span>
             <div>
@@ -717,17 +717,20 @@
             </div>
           </div>
         </div>
-        <div class="settings-row" onclick="showChangePasswordModal()">
+        <div class="settings-row" id="settings-password-row" onclick="showChangePasswordModal()">
           <div class="settings-row-left">
             <span class="settings-row-icon">🔑</span>
             <div><div class="settings-row-text">Change Password</div></div>
           </div>
           <div class="settings-row-right">›</div>
         </div>
-        <div class="settings-row destructive" onclick="doSignOut()">
+        <div class="settings-row destructive" id="settings-signout-row" onclick="doSignOut()">
           <div class="settings-row-left">
             <span class="settings-row-icon">🚪</span>
-            <div><div class="settings-row-text">Sign Out</div></div>
+            <div>
+              <div class="settings-row-text" id="settings-signout-text">Sign Out</div>
+              <div class="settings-row-sub" id="settings-signout-sub" style="display:none"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -803,7 +806,7 @@
             <span class="settings-row-icon">📱</span>
             <div><div class="settings-row-text">App Version</div></div>
           </div>
-          <div class="settings-row-right">Version 1.1</div>
+          <div class="settings-row-right">Version 1.4</div>
         </div>
       </div>
     </div>
@@ -868,7 +871,7 @@
     </div>
 
     <div style="padding:20px 0;text-align:center">
-      <div style="font-size:13px;color:var(--muted)">Sticker Quest v1.1</div>
+      <div style="font-size:13px;color:var(--muted)">Sticker Quest v1.4</div>
     </div>
   </div>
 
@@ -1068,7 +1071,11 @@ function doForgotPassword() {
 }
 
 function doSignOut() {
-  if (!confirm('Sign out of Sticker Quest?')) return;
+  const localMode = window.SQ_NATIVE_APP && !window.SQ_USING_APPLE;
+  const prompt = localMode
+    ? 'Return to the welcome screen? Your progress stays saved on this device.'
+    : 'Sign out of Sticker Quest?';
+  if (!confirm(prompt)) return;
   // Show backup prompt before signing out
   const backupCode = generateBackupCode();
   if (backupCode) {
@@ -1087,6 +1094,12 @@ function doSignOut() {
 function completeSignOut() {
   localStorage.removeItem('sq_logged_in');
   parentUnlocked = false;
+  // In the native iOS app the web login screen is skipped, so hand sign-out
+  // back to Swift, which clears the native session and shows the login screen.
+  if (window.SQ_NATIVE_APP && window.webkit?.messageHandlers?.sqNative) {
+    window.webkit.messageHandlers.sqNative.postMessage('signOut');
+    return;
+  }
   showScreen('screen-login');
   showSignIn();
 }
@@ -1982,6 +1995,29 @@ function renderSettings() {
   document.getElementById('settings-consent-status').textContent = consentDate
     ? `✅ Consent given on ${consentDate}`
     : 'No consent on file';
+
+  applyNativeMode();
+}
+
+// Adjust account UI when running inside the native iOS app.
+// Native handles login (Sign in with Apple is optional), so the web-only
+// email/password rows don't apply, and Sign Out is routed back to Swift.
+function applyNativeMode() {
+  if (!window.SQ_NATIVE_APP) return;
+  const usingApple = !!window.SQ_USING_APPLE;
+  const emailRow = document.getElementById('settings-email-row');
+  const pwRow = document.getElementById('settings-password-row');
+  if (emailRow) emailRow.style.display = 'none';   // no web email account natively
+  if (pwRow) pwRow.style.display = 'none';          // password handled by Apple, not in-app
+  const sub = document.getElementById('settings-signout-sub');
+  const txt = document.getElementById('settings-signout-text');
+  if (txt) txt.textContent = usingApple ? 'Sign Out' : 'Return to Welcome Screen';
+  if (sub) {
+    sub.style.display = 'block';
+    sub.textContent = usingApple
+      ? 'Signed in with Apple · progress stays on this device'
+      : 'Playing without an account · progress stays saved';
+  }
 }
 
 function toggleSetting(key) {
@@ -2138,7 +2174,7 @@ function confirmReset() {
 }
 
 // ========== BACKUP / RESTORE ==========
-const SQ_KEYS = ['sq_logged_in','sq_parent_email','sq_parent_name','sq_parent_password','sq_child_name','sq_child_avatar','sq_points','sq_level','sq_tasks','sq_stickers','sq_rewards','sq_consent_date','sq_streak','sq_last_active','sq_activity_log'];
+const SQ_KEYS = ['sq_state','sq_logged_in','sq_parent_email','sq_parent_name','sq_parent_password','sq_child_name','sq_child_avatar','sq_points','sq_level','sq_tasks','sq_stickers','sq_rewards','sq_consent_date','sq_streak','sq_last_active','sq_activity_log'];
 
 function generateBackupCode() {
   const data = {};

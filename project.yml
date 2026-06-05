@@ -47,7 +47,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gyeningcorp.stickerquest
         MARKETING_VERSION: "1.3"
-        CURRENT_PROJECT_VERSION: "2"
+        CURRENT_PROJECT_VERSION: "3"
         SWIFT_VERSION: "5.9"
         IPHONEOS_DEPLOYMENT_TARGET: "15.0"
         TARGETED_DEVICE_FAMILY: "1,2"
